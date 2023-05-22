@@ -1,4 +1,4 @@
-#include "raylib.h"
+#include <raylib.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -80,7 +80,7 @@ int main(void)
     game.screenWidth = 800;
     game.screenHeight = 450;
 
-    InitWindow(game.screenWidth, game.screenHeight, "Aedsinho's quest");
+    InitWindow(game.screenWidth, game.screenHeight, "BERZERK");
     SetTargetFPS(60);
     
     InitGame(&game);
@@ -90,12 +90,12 @@ int main(void)
         UpdateDrawFrame(&game);
         if(game.gameover) break;
     }
-    while(!IsKeyDown(KEY_ENTER)){
+    /*while(!IsKeyDown(KEY_ENTER)){
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawText("GAME OVER", GetScreenWidth()/2 - MeasureText("GAME OVER", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
         EndDrawing();
-    }
+    }*/
     return 0;
 }
 //------------------------------------------------------------------------------------
