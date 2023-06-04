@@ -9,14 +9,25 @@
 #define STD_SIZE_Y 30
 #define SCREEN_BORDER 4
 
-typedef struct Hero {
+typedef struct HeroBullet{
     Rectangle pos;
     Color color;
+    int direction;
+    int speed;
+} HeroBullet;
+
+typedef struct Hero{
+    Rectangle pos;
+    Color color;
+    HeroBullet bullets[2];
+    char name[8];
+    int bullets_left;
+    int direction;
     int speed;
     int special;
 } Hero;
 
-typedef struct Enemy {
+typedef struct Enemy{
     Rectangle pos;
     Color color;
     int speed;
@@ -25,7 +36,7 @@ typedef struct Enemy {
     int has_key;
 } Enemy;
 
-typedef struct Map {
+typedef struct Map{
     Rectangle barriers[10];
     int num_barriers;
     Rectangle door;
@@ -40,7 +51,7 @@ typedef struct Map {
     int prev_map;
 } Map;
 
-typedef struct Game { 
+typedef struct Game{ 
     Map maps[10];
     int num_maps;
     int curr_map;

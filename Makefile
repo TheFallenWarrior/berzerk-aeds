@@ -2,14 +2,15 @@
 
 CFLAGS := -Wall -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 OUTPUT := dist/berzerk
+SRC := $(shell find src/ -name *.c)
 
 .PHONY: run clean
 
 all: run
 
-$(OUTPUT): src/main.c
-	mkdir -p dist/
-	@gcc src/main.c $(CFLAGS) -o $(OUTPUT)
+$(OUTPUT): $(SRC)
+	@mkdir -p dist/
+	@gcc $(SRC) $(CFLAGS) -o $(OUTPUT)
 
 run: $(OUTPUT)
 	@./$(OUTPUT)
