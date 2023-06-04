@@ -4,7 +4,7 @@ CFLAGS := -Wall -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 OUTPUT := dist/berzerk
 SRC := $(shell find src/ -name *.c)
 
-.PHONY: run clean
+.PHONY: run clean commit
 
 all: run
 
