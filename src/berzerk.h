@@ -2,16 +2,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//----------------------------------------------------------------------------------
-// Some Defines
-//----------------------------------------------------------------------------------
 #define STD_SIZE_X 30
 #define STD_SIZE_Y 30
 #define SCREEN_BORDER 4
+#define SCREEN_SIZE_X 800
+#define SCREEN_SIZE_Y 480
 
 typedef struct HeroBullet{
     Rectangle pos;
     Color color;
+    int active;
     int direction;
     int speed;
 } HeroBullet;
@@ -62,15 +62,15 @@ typedef struct Game{
 } Game;
 
 //------------------------------------------------------------------------------------
-// Module Functions Declaration (local)
+// Protótipos das funções do módulo
 //------------------------------------------------------------------------------------
-void InitGame(Game *g);         // Initialize game
-void UpdateGame(Game *g);       // Update game (one frame)
-void DrawGame(Game *g);         // Draw game (one frame)
-void UpdateDrawFrame(Game *g);  // Update and Draw (one frame)
+void InitGame(Game *g);         // Inicializa a variáveis do jogo
+void UpdateGame(Game *g);       // Atualiza o jogo (um frame)
+void DrawGame(Game *g);         // Desenha a tela (um frame)
+void UpdateDrawFrame(Game *g);  // Atualiza e desenha
 
 //------------------------------------------------------------------------------------
-// Auxiliar Functions Declaration
+// Protótipos das funções auxiliares
 //------------------------------------------------------------------------------------
 void draw_borders(Game *g);
 void draw_map(Game *g);

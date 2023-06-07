@@ -6,13 +6,26 @@
 
 // Inicializa a variáveis do jogo
 void InitGame(Game *g){
-
     g->curr_map = 0;
     g->num_maps = 10;
-    g->hero.pos = (Rectangle) { 150, 300, STD_SIZE_X, STD_SIZE_Y};
+    g->hero.pos = (Rectangle){150, 300, STD_SIZE_X, STD_SIZE_Y};
     g->hero.color = BLACK;
     g->hero.speed = 6;
     g->hero.special = 0;
+    g->hero.bullets[0] = (HeroBullet){
+        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
+        BLACK,
+        0,
+        0,
+        10,
+    };
+    g->hero.bullets[1] = (HeroBullet){
+        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
+        BLACK,
+        0,
+        0,
+        10,
+    };
     g->gameover = 0;
     map0_setup(g);
     map1_setup(g);
@@ -20,8 +33,7 @@ void InitGame(Game *g){
 }
 
 // Atualiza o jogo (um frame)
-void UpdateGame(Game *g)
-{
+void UpdateGame(Game *g){
     update_hero_pos(g);
 
     Map *map = &g->maps[g->curr_map];
@@ -63,8 +75,7 @@ void UpdateGame(Game *g)
 }
 
 // Desenha a tela (um frame)
-void DrawGame(Game *g)
-{
+void DrawGame(Game *g){
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
@@ -78,14 +89,12 @@ void DrawGame(Game *g)
 }
 
 // Atualiza e desenha
-void UpdateDrawFrame(Game *g)
-{
+void UpdateDrawFrame(Game *g){
     UpdateGame(g);
     DrawGame(g);
 }
 
-void draw_borders(Game *g)
-{
+void draw_borders(Game *g){
     DrawRectangle(0, 0, SCREEN_BORDER, g->screenHeight, BLACK);
     DrawRectangle(0, 0, g->screenWidth, SCREEN_BORDER, BLACK);
     DrawRectangle(g->screenWidth-SCREEN_BORDER, 0, g->screenWidth, g->screenHeight, BLACK);
@@ -117,7 +126,6 @@ void draw_map(Game *g){
 }
 
 void update_hero_pos(Game *g){
-
     Hero *h = &g->hero;
     Map *m = &g->maps[g->curr_map];
 
@@ -125,77 +133,106 @@ void update_hero_pos(Game *g){
         if(h->pos.x > SCREEN_BORDER)
             h->pos.x -= h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.x += h->speed;
-        h->direction = 4;
+        h->direction = KEY_LEFT;
         
     } else if(IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
         if(h->pos.x + h->pos.width < g->screenWidth - SCREEN_BORDER)
             h->pos.x += h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.x -= h->speed;
-        h->direction = 2;
+        h->direction = KEY_RIGHT;
 
     } else if(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) {
         if(h->pos.y > SCREEN_BORDER)
             h->pos.y -= h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.y += h->speed;
-        h->direction = 1;
+        h->direction = KEY_UP;
 
     } else if(IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) {
         if(h->pos.y + h->pos.height < g->screenHeight - SCREEN_BORDER)
             h->pos.y += h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.y -= h->speed;
-        h->direction = 3;
+        h->direction = KEY_DOWN;
     }
 }
 
-void update_enemy_pos(Game *g, Enemy *e)
-{
+void update_bullet_pos(Game *g, int index){
+    HeroBullet *hb = &g->hero.bullets[index];
+    Map *m = &g->maps[g->curr_map];
+
+    if(hb->active){
+        switch(hb->direction){
+            case KEY_LEFT:
+                if(hb->pos.x > SCREEN_BORDER)
+                    hb->pos.x -= hb->speed;
+                break;
+            
+            case KEY_RIGHT:
+                if(hb->pos.x + hb->pos.width < g->screenWidth - SCREEN_BORDER)
+                    hb->pos.x += hb->speed;
+                break;
+            
+            case KEY_UP:
+                if(hb->pos.y > SCREEN_BORDER)
+                    hb->pos.y -= hb->speed;
+                break;
+            
+            case KEY_DOWN:
+                if(hb->pos.y + hb->pos.height < g->screenHeight - SCREEN_BORDER)
+                    hb->pos.y += hb->speed;
+                break;
+        }
+        if(barrier_collision(m, &hb->pos)) hb->active = 0;
+    }
+}
+
+void update_enemy_pos(Game *g, Enemy *e){
     Map *m = &g->maps[g->curr_map];
 
     if(e->direction == KEY_LEFT) {
         if(e->pos.x > SCREEN_BORDER)
             e->pos.x -= e->speed;
         else{
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         }
         if(barrier_collision(m, &e->pos)){
             e->pos.x += e->speed;
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         }
 
     } else if(e->direction == KEY_RIGHT) {
         if(e->pos.x + e->pos.width < g->screenWidth - SCREEN_BORDER)
             e->pos.x += e->speed;
         else
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         
         if(barrier_collision(m, &e->pos)){
             e->pos.x -= e->speed;
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         }
         
     } else if(e->direction == KEY_UP) {
         if(e->pos.y > SCREEN_BORDER)
             e->pos.y -= e->speed;
         else
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         
         if(barrier_collision(m, &e->pos)){
             e->pos.y += e->speed;
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         }
     } else if(e->direction == KEY_DOWN) {
         if(e->pos.y + e->pos.height < g->screenHeight - SCREEN_BORDER)
             e->pos.y += e->speed;
         else
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         
         if(barrier_collision(m, &e->pos)){
             e->pos.y -= e->speed;
-            e->direction = KEY_RIGHT + (rand() % 4);
+            e->direction = KEY_RIGHT + (rand()%4);
         }
     }
-    if(rand() % 100 == 1) // 1% de chance do inimigo mudar de direcao
-        e->direction = KEY_RIGHT + (rand() % 4);
+    if(rand() % 100 == 1) // 1% de chance do inimigo mudar de direção
+        e->direction = KEY_RIGHT + (rand()%4);
 }
 
 int barrier_collision(Map *map, Rectangle *target){
@@ -207,7 +244,7 @@ int barrier_collision(Map *map, Rectangle *target){
     return 0;
 }
 
-// Maps Setup
+// Setup dos mapas
 void map0_setup(Game *g){
     g->maps[0].num_barriers = 1;
     g->maps[0].barriers[0] = (Rectangle) {g->screenWidth/2, 0, 2, 0.8 * g->screenHeight};

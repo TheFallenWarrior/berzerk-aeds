@@ -6,8 +6,8 @@
 int main(void)
 {
     Game game;
-    game.screenWidth = 800;
-    game.screenHeight = 480;
+    game.screenWidth = SCREEN_SIZE_X;
+    game.screenHeight = SCREEN_SIZE_Y;
 
     InitWindow(game.screenWidth, game.screenHeight, "BERZERK");
     SetTargetFPS(60);
