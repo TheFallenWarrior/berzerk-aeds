@@ -23,7 +23,6 @@ typedef struct Hero{
     int bullets_left;
     int direction;
     int speed;
-    int special;
 } Hero;
 
 typedef struct Enemy{
@@ -43,8 +42,6 @@ typedef struct Map{
     Color color;
     Enemy enemies[10];
     int num_enemies;
-    Rectangle special_item;
-    int draw_special_item;
     int door_locked;
     int next_map;
     int prev_map;

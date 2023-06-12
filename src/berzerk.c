@@ -1,5 +1,4 @@
 #include "berzerk.h"
-#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções do módulo
@@ -12,7 +11,6 @@ void InitGame(Game *g){
     g->hero.pos = (Rectangle){150, 300, STD_SIZE_X, STD_SIZE_Y};
     g->hero.color = BLACK;
     g->hero.speed = 6;
-    g->hero.special = 0;
     g->hero.direction = KEY_DOWN;
     g->hero.bullets_left = 2;
     g->hero.bullets[0] = (HeroBullet){
@@ -64,25 +62,15 @@ void UpdateGame(Game *g){
         g->gameover = 1;
     }
 
-    if(CheckCollisionRecs(h->pos, map->special_item) && map->draw_special_item){
-        h->pos.width += 10;
-        h->pos.height += 10;
-        h->special = 1;
-        map->draw_special_item = 0;
-    }
-
     if(CheckCollisionRecs(h->pos, map->door) && !map->door_locked){
         g->curr_map = map->next_map;
         h->pos = (Rectangle){50, 200, STD_SIZE_X, STD_SIZE_Y};
-        h->special = 0;
     }
 
     if(map->prev_map != -1 && CheckCollisionRecs(h->pos, map->prev_door)){
         g->curr_map = map->prev_map;
         h->pos = (Rectangle){g->screenWidth-50, (float)g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
-        h->special = 0;
-    }
-
+   }
 }
 
 // Desenha a tela (um frame)
@@ -134,9 +122,6 @@ void draw_map(Game *g){
         if(!map->enemies[i].draw_enemy) continue;
         DrawRectangleRec(map->enemies[i].pos, PINK);
     }
-
-    if(map->draw_special_item)
-        DrawRectangleRec(map->special_item, PURPLE);
 }
 
 void update_hero_pos(Game *g){
@@ -317,8 +302,6 @@ void map0_setup(Game *g){
         g->maps[0].enemies[i].has_key = 0;
     }
     g->maps[0].enemies[0].has_key = 1;
-    g->maps[0].special_item = (Rectangle){(float)2*g->screenWidth/3, 20, 15, 15};
-    g->maps[0].draw_special_item = 1;
     g->maps[0].prev_map = -1;
     g->maps[0].next_map = 1;
 }
@@ -342,8 +325,6 @@ void map1_setup(Game *g){
         g->maps[1].enemies[i].has_key = 0;
     }
     g->maps[1].enemies[0].has_key = 1;
-    g->maps[1].special_item = (Rectangle){(float)4*g->screenWidth/5, 20, 15, 15};
-    g->maps[1].draw_special_item = 1;
     g->maps[1].prev_map = 0;
     g->maps[1].next_map = 2;
 }
@@ -368,8 +349,6 @@ void map2_setup(Game *g){
         g->maps[2].enemies[i].has_key = 0;
     }
     g->maps[2].enemies[0].has_key = 1;
-    g->maps[2].special_item = (Rectangle){(float)4*g->screenWidth/5, 20, 15, 15};
-    g->maps[2].draw_special_item = 1;
     g->maps[2].prev_map = 1;
     g->maps[2].next_map = 3;
 }
