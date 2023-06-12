@@ -17,17 +17,20 @@ int main(void)
         DrawText("Berzerk", GetScreenWidth()/2 - MeasureText("Berzerk", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
         DrawText("Press Enter to continue", GetScreenWidth()/2 - MeasureText("Press Enter to continue", 20)/2, GetScreenHeight()/2 + 25, 20, GRAY);
         EndDrawing();
+        if(WindowShouldClose()) exit(0); // Detecta o pedido de fechamento do jogo
     }
     InitGame(&game);
-    while(!WindowShouldClose()) { // Detecta o pedido de fechamento do jogo
+    while(1) { // Loop principal do jogo
         UpdateDrawFrame(&game);
         if(game.gameover) break;
+        if(WindowShouldClose()) exit(0);
     }
-    while(!IsKeyDown(KEY_ENTER)){
+    while(!IsKeyDown(KEY_ENTER)){ // Desenha a tela de gameover
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawText("Game Over", GetScreenWidth()/2 - MeasureText("GAME OVER", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
         EndDrawing();
+        if(WindowShouldClose()) exit(0);
     }
-    return 0;
+    exit(0);
 }

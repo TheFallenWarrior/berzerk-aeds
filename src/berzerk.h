@@ -10,7 +10,6 @@
 
 typedef struct HeroBullet{
     Rectangle pos;
-    Color color;
     int active;
     int direction;
     int speed;
@@ -76,6 +75,8 @@ void draw_borders(Game *g);
 void draw_map(Game *g);
 void update_enemy_pos(Game *g, Enemy *e);
 void update_hero_pos(Game *g);
+void shoot_bullet(Game *g);
+void update_bullet_pos(Game *g, int index);
 
 int barrier_collision(Map *m, Rectangle *t);
 void map0_setup(Game *g);
