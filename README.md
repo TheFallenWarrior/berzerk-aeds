@@ -7,6 +7,8 @@ Recriação do Jogo 'Berzerk' de Atari 2600, feito de acordo com a especificaç�
 `src/`: contém os arquivos fonte *.c e de cabeçalho *.h
 <br>
 `docs/`: contém os arquivos de documentação
+<br>
+`res/gfx`: contém os gráficos
 
 ### Como compilar:
 Simplesmente rode `make` no terminal. O executável será gerado como `dist/berzerk`. Por padrão, o comando `make` compila e executa o jogo. Caso queira apenas compilar, use `make dist/berzerk`. (*Em todos os casos, é necessário ter a biblioteca Raylib instalada*.)

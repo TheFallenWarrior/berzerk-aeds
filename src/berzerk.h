@@ -19,10 +19,13 @@ typedef struct Hero{
     Rectangle pos;
     Color color;
     HeroBullet bullets[2];
+    Texture2D texture;
     char name[8];
     int bullets_left;
     int direction;
     int speed;
+    int anim_speed;
+    int current_frame;
 } Hero;
 
 typedef struct Enemy{

@@ -1,4 +1,5 @@
 #include "berzerk.h"
+#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções do módulo
@@ -8,7 +9,8 @@
 void InitGame(Game *g){
     g->curr_map = 0;
     g->num_maps = 10;
-    g->hero.pos = (Rectangle){150, 300, STD_SIZE_X, STD_SIZE_Y};
+    g->hero.texture = LoadTexture("res/gfx/berzerker.png");
+    g->hero.pos = (Rectangle){150, 300, STD_SIZE_X,  (float)g->hero.texture.width/16};
     g->hero.color = BLACK;
     g->hero.speed = 6;
     g->hero.direction = KEY_DOWN;
@@ -75,17 +77,44 @@ void UpdateGame(Game *g){
 
 // Desenha a tela (um frame)
 void DrawGame(Game *g){
+    Hero *h = &g->hero;
+    int hero_sprite_offset;
+
     BeginDrawing();
+
 
     ClearBackground(RAYWHITE);
     DrawRectangle(0, 0, g->screenWidth, g->screenHeight, GRAY);
     draw_borders(g);
     draw_map(g);
 
-    DrawRectangleRec(g->hero.pos, g->hero.color);
-    DrawRectangleRec(g->hero.bullets[0].pos, g->hero.color);
-    DrawRectangleRec(g->hero.bullets[1].pos, g->hero.color);
+    switch (h->direction){
+        case KEY_DOWN:
+            hero_sprite_offset = 0;
+            break;
+        
+        case KEY_UP:
+            hero_sprite_offset = 256;
+            break;
+        
+        case KEY_LEFT:
+            hero_sprite_offset = 384;
+            break;
+        
+        case KEY_RIGHT:
+            hero_sprite_offset = 128;
+    }
 
+    //DrawRectangleRec(h->pos, h->color);
+    //DrawTexture(h->texture, 10, 10, WHITE);
+    DrawTextureRec(
+        h->texture,
+        (Rectangle){0+hero_sprite_offset+(h->current_frame*32), 0, 32, 48},
+        (Vector2){h->pos.x, h->pos.y - (h->texture.height-STD_SIZE_Y)},
+        WHITE
+    );
+    DrawRectangleRec(h->bullets[0].pos, h->color);
+    DrawRectangleRec(h->bullets[1].pos, h->color);
 
     EndDrawing();
 }
@@ -127,6 +156,8 @@ void draw_map(Game *g){
 void update_hero_pos(Game *g){
     Hero *h = &g->hero;
     Map *m = &g->maps[g->curr_map];
+    static int frame_counter = 0;
+
     update_bullet_pos(g, 0);
     update_bullet_pos(g, 1);
 
@@ -135,30 +166,40 @@ void update_hero_pos(Game *g){
             h->pos.x -= h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.x += h->speed;
         h->direction = KEY_LEFT;
+        frame_counter++;
         
     } else if(IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)){
         if(h->pos.x + h->pos.width < g->screenWidth - SCREEN_BORDER)
             h->pos.x += h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.x -= h->speed;
         h->direction = KEY_RIGHT;
+        frame_counter++;
 
     } else if(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)){
         if(h->pos.y > SCREEN_BORDER)
             h->pos.y -= h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.y += h->speed;
         h->direction = KEY_UP;
+        frame_counter++;
 
     } else if(IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)){
         if(h->pos.y + h->pos.height < g->screenHeight - SCREEN_BORDER)
             h->pos.y += h->speed;
         if(barrier_collision(m, &h->pos)) h->pos.y -= h->speed;
         h->direction = KEY_DOWN;
+        frame_counter++;
     }
+
+    if(frame_counter >= 10){
+        frame_counter = 0;
+        h->current_frame++;
+    }
+    if(h->current_frame >= 4) h->current_frame = 0;
 }
 
 void shoot_bullet(Game *g){
     Hero *h = &g->hero;
-    HeroBullet *hb = &g->hero.bullets[2 - h->bullets_left];
+    HeroBullet *hb = &h->bullets[2 - h->bullets_left];
 
     if(h->bullets_left>0.5){
         hb->pos.x = h->pos.x-1 + (float)(STD_SIZE_X)/2;

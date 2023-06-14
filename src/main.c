@@ -10,6 +10,7 @@ int main(void)
     game.screenHeight = SCREEN_SIZE_Y;
 
     InitWindow(game.screenWidth, game.screenHeight, "BERZERK");
+
     SetTargetFPS(60);
     while(!IsKeyDown(KEY_ENTER)){ // Desenha a tela de título antes do jogo começar
         BeginDrawing();
