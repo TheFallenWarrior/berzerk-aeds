@@ -5,9 +5,6 @@
 //------------------------------------------------------------------------------------
 int main(){
     Game game;
-    int letter_count = 0;
-
-    FILE *hiscores;
 
     game.screenWidth = SCREEN_SIZE_X;
     game.screenHeight = SCREEN_SIZE_Y;
@@ -24,7 +21,8 @@ int main(){
         if(WindowShouldClose()) exit(0); // Detecta o pedido de fechamento do jogo
     }
     InitGame(&game); // Inicializa o jogo
-
+    
+    int letter_count = 0;
     while(!IsKeyPressed(KEY_ENTER) || letter_count < 3){ // Tela de entrada do nome do jogador
         int key = GetCharPressed();
         letter_count = strlen(game.hero.name);
@@ -60,35 +58,35 @@ int main(){
         if(WindowShouldClose()) exit(0);
     }
 
+    // Leitura e tratamento dos recordes
+    FILE *scores_file;
     game.timer = clock() - game.timer;
-    hiscores = fopen("highscores", "r");
+    scores_file = fopen("highscores", "r");
 
     char str[24];
     char names[3][7];
-    int scores[3] = {0, 0, 0};
-    double score = (double)game.timer/100000;
-    for(int i=0;fgets(str, sizeof(str), hiscores);i++){
-        if(i < 3) sscanf(str, "%d %s\n", &scores[i], names[i]); 
+    int highscores[3] = {0, 0, 0};
+    double current_score = (double)game.timer/100000;
+    for(int i=0;fgets(str, sizeof(str), scores_file);i++){
+        if(i < 3) sscanf(str, "%d %s\n", &highscores[i], names[i]); 
     }
     for(int i=0;i<3;i++){
-        if(!scores[i]) strcpy(names[i], "");
-        if(score > scores[i]){
+        if(!highscores[i]) strcpy(names[i], "");
+        if(current_score > highscores[i]){
             strcpy(names[i], game.hero.name);
-            scores[i] = (int)score;
+            highscores[i] = (int)current_score;
             break;
         }
     }
 
-    hiscores = fopen("highscores", "w");
+    scores_file = fopen("highscores", "w");
     for(int i=0;i<3;i++){
-        fprintf(hiscores, "%d %s\n", scores[i], names[i]);
+        fprintf(scores_file, "%d %s\n", highscores[i], names[i]);
     }
 
-    //fprintf(hiscores, "%.0lf %s\n", (double)game.timer/100000, game.hero.name);
-    fclose(hiscores);
-    while(!IsKeyPressed(KEY_ENTER)){ // Desenha a tela de gameover
-        draw_highscores(names, scores);
-        if(WindowShouldClose()) exit(0);
+    fclose(scores_file);
+    while(!IsKeyPressed(KEY_ENTER) && !WindowShouldClose()){ // Desenha a tela de gameover
+        draw_highscores(names, highscores);
     }
     exit(0);
 }
