@@ -61,7 +61,7 @@ int main(){
     // Leitura e tratamento dos recordes
     FILE *scores_file;
     game.timer = clock() - game.timer;
-    scores_file = fopen("highscores", "r");
+    scores_file = fopen("highscores", "w+");
 
     char str[24];
     char names[3][7];
@@ -70,6 +70,8 @@ int main(){
     for(int i=0;fgets(str, sizeof(str), scores_file);i++){
         if(i < 3) sscanf(str, "%d %s\n", &highscores[i], names[i]); 
     }
+    
+    fclose(scores_file);
     for(int i=0;i<3;i++){
         if(!highscores[i]) strcpy(names[i], "");
         if(current_score > highscores[i]){
