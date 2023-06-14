@@ -1,12 +1,15 @@
 #include <raylib.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <time.h>
 
 #define STD_SIZE_X 30
 #define STD_SIZE_Y 30
 #define SCREEN_BORDER 4
 #define SCREEN_SIZE_X 800
 #define SCREEN_SIZE_Y 480
+#define CHARACTER_NAME_SIZE 6
 
 typedef struct HeroBullet{
     Rectangle pos;
@@ -16,15 +19,14 @@ typedef struct HeroBullet{
 } HeroBullet;
 
 typedef struct Hero{
+    Texture2D texture;
     Rectangle pos;
     Color color;
     HeroBullet bullets[2];
-    Texture2D texture;
-    char name[8];
+    char name[CHARACTER_NAME_SIZE+1];
     int bullets_left;
     int direction;
     int speed;
-    int anim_speed;
     int current_frame;
 } Hero;
 
@@ -58,11 +60,13 @@ typedef struct Game{
     int screenWidth;
     int screenHeight;
     int gameover;
+    clock_t timer;
 } Game;
 
 //------------------------------------------------------------------------------------
 // Protótipos das funções do módulo
 //------------------------------------------------------------------------------------
+
 void InitGame(Game *g);         // Inicializa a variáveis do jogo
 void UpdateGame(Game *g);       // Atualiza o jogo (um frame)
 void DrawGame(Game *g);         // Desenha a tela (um frame)
@@ -71,6 +75,8 @@ void UpdateDrawFrame(Game *g);  // Atualiza e desenha
 //------------------------------------------------------------------------------------
 // Protótipos das funções auxiliares
 //------------------------------------------------------------------------------------
+
+void draw_highscores(char names[3][7], int *scores);
 void draw_borders(Game *g);
 void draw_map(Game *g);
 void update_enemy_pos(Game *g, Enemy *e);

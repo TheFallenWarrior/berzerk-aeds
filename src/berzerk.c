@@ -1,5 +1,4 @@
 #include "berzerk.h"
-#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções do módulo
@@ -9,24 +8,22 @@
 void InitGame(Game *g){
     g->curr_map = 0;
     g->num_maps = 10;
+    strcpy(g->hero.name, "\0");
+    g->hero.current_frame = 0;
     g->hero.texture = LoadTexture("res/gfx/berzerker.png");
-    g->hero.pos = (Rectangle){150, 300, STD_SIZE_X,  (float)g->hero.texture.width/16};
+    g->hero.pos = (Rectangle){150, 300, STD_SIZE_X,  STD_SIZE_Y};
     g->hero.color = BLACK;
-    g->hero.speed = 6;
+    g->hero.speed = 4;
     g->hero.direction = KEY_DOWN;
     g->hero.bullets_left = 2;
     g->hero.bullets[0] = (HeroBullet){
         (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
         0,
         0,
-        10,
+        8,
     };
-    g->hero.bullets[1] = (HeroBullet){
-        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
-        0,
-        0,
-        10,
-    };
+    g->hero.bullets[1] = g->hero.bullets[0];
+    g->timer = clock();
     g->gameover = 0;
     map0_setup(g);
     map1_setup(g);
@@ -42,7 +39,7 @@ void UpdateGame(Game *g){
 
     if(IsKeyReleased(KEY_SPACE)) shoot_bullet(g);
 
-    for(int i; i < map->num_enemies; i++){
+    for(int i=0; i < map->num_enemies; i++){
         if(!map->enemies[i].draw_enemy) continue;
         update_enemy_pos(g, &map->enemies[i]);
         if(CheckCollisionRecs(h->bullets[0].pos, map->enemies[i].pos)){
@@ -78,10 +75,9 @@ void UpdateGame(Game *g){
 // Desenha a tela (um frame)
 void DrawGame(Game *g){
     Hero *h = &g->hero;
-    int hero_sprite_offset;
+    int hero_sprite_offset = 0;
 
     BeginDrawing();
-
 
     ClearBackground(RAYWHITE);
     DrawRectangle(0, 0, g->screenWidth, g->screenHeight, GRAY);
@@ -104,18 +100,15 @@ void DrawGame(Game *g){
         case KEY_RIGHT:
             hero_sprite_offset = 128;
     }
-
-    //DrawRectangleRec(h->pos, h->color);
-    //DrawTexture(h->texture, 10, 10, WHITE);
+    
+    DrawRectangleRec(h->bullets[0].pos, h->color);
+    DrawRectangleRec(h->bullets[1].pos, h->color);
     DrawTextureRec(
         h->texture,
         (Rectangle){0+hero_sprite_offset+(h->current_frame*32), 0, 32, 48},
         (Vector2){h->pos.x, h->pos.y - (h->texture.height-STD_SIZE_Y)},
         WHITE
     );
-    DrawRectangleRec(h->bullets[0].pos, h->color);
-    DrawRectangleRec(h->bullets[1].pos, h->color);
-
     EndDrawing();
 }
 
@@ -123,6 +116,19 @@ void DrawGame(Game *g){
 void UpdateDrawFrame(Game *g){
     UpdateGame(g);
     DrawGame(g);
+}
+
+void draw_highscores(char names[3][7], int *scores){
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    DrawText("Game Over", GetScreenWidth()/2 - MeasureText("Game Over", 20)/2, 100, 20, BLACK);
+    DrawText("Highscores", GetScreenWidth()/2 - MeasureText("Highscores", 20)/2, 200, 20, BLACK);
+    for(int i=0;i<3;i++){
+        char str[24];
+        sprintf(str, "(%d) %s", scores[i], names[i]);
+        DrawText(str, GetScreenWidth()/2 - MeasureText(str, 20)/2, 250 + 50*i, 20, GRAY);
+    }
+    EndDrawing();
 }
 
 void draw_borders(Game *g){
@@ -201,12 +207,14 @@ void shoot_bullet(Game *g){
     Hero *h = &g->hero;
     HeroBullet *hb = &h->bullets[2 - h->bullets_left];
 
-    if(h->bullets_left>0.5){
+    if(h->bullets_left>0){
         hb->pos.x = h->pos.x-1 + (float)(STD_SIZE_X)/2;
         hb->pos.y = h->pos.y-1 + (float)(STD_SIZE_Y)/2;
         hb->active = 1;
         hb->direction = h->direction;
-        (h->bullets_left)--;
+        h->bullets_left--;
+        h->current_frame++;
+        if(h->current_frame >= 4) h->current_frame = 0;
     }
 }
 
@@ -218,7 +226,7 @@ void update_bullet_pos(Game *g, int index){
         (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
         0,
         0,
-        10,
+        8,
     };
 
     if(hb->active){
@@ -327,24 +335,25 @@ int barrier_collision(Map *map, Rectangle *target){
 
 // Setup dos mapas
 void map0_setup(Game *g){
-    g->maps[0].num_barriers = 1;
-    g->maps[0].barriers[0] = (Rectangle){(float)g->screenWidth/2, 0, 5, 0.8 * g->screenHeight};
-    g->maps[0].color = GRAY;
-    g->maps[0].door = (Rectangle){g->screenWidth-(SCREEN_BORDER+5), (float)g->screenHeight/3, SCREEN_BORDER, 50};
-    g->maps[0].num_enemies = 2;
-    g->maps[0].door_locked = 1;
+    Map *m = &g->maps[0];
+    m->num_barriers = 1;
+    m->barriers[0] = (Rectangle){(float)g->screenWidth/2, 0, 5, 0.8 * g->screenHeight};
+    m->color = GRAY;
+    m->door = (Rectangle){g->screenWidth-(SCREEN_BORDER+5), (float)g->screenHeight/3, SCREEN_BORDER, 50};
+    m->num_enemies = 2;
+    m->door_locked = 1;
 
-    for(int i=0; i< g->maps[0].num_enemies; i++){
-        g->maps[0].enemies[i].pos = (Rectangle){(float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
-        g->maps[0].enemies[i].color = BLACK;
-        g->maps[0].enemies[i].speed = 4;
-        g->maps[0].enemies[i].direction = KEY_RIGHT + (rand()%4);
-        g->maps[0].enemies[i].draw_enemy = 1;
-        g->maps[0].enemies[i].has_key = 0;
+    for(int i=0; i< m->num_enemies; i++){
+        m->enemies[i].pos = (Rectangle){(float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
+        m->enemies[i].color = BLACK;
+        m->enemies[i].speed = 4;
+        m->enemies[i].direction = KEY_RIGHT + (rand()%4);
+        m->enemies[i].draw_enemy = 1;
+        m->enemies[i].has_key = 0;
     }
-    g->maps[0].enemies[0].has_key = 1;
-    g->maps[0].prev_map = -1;
-    g->maps[0].next_map = 1;
+    m->enemies[0].has_key = 1;
+    m->prev_map = -1;
+    m->next_map = 1;
 }
 
 void map1_setup(Game *g){
