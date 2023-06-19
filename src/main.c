@@ -1,4 +1,5 @@
 #include "berzerk.h"
+#include <stdio.h>
 
 //------------------------------------------------------------------------------------
 // Ponto de entrada do programa
@@ -10,8 +11,8 @@ int main(){
     game.screenHeight = SCREEN_SIZE_Y;
 
     InitWindow(game.screenWidth, game.screenHeight, "BERZRK");
-
     SetTargetFPS(60);
+
     while(!IsKeyPressed(KEY_ENTER)){ // Desenha a tela de título antes do jogo começar
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -21,7 +22,7 @@ int main(){
         if(WindowShouldClose()) exit(0); // Detecta o pedido de fechamento do jogo
     }
     InitGame(&game); // Inicializa o jogo
-    
+ 
     int letter_count = 0;
     while(!IsKeyPressed(KEY_ENTER) || letter_count < 3){ // Tela de entrada do nome do jogador
         int key = GetCharPressed();
@@ -61,7 +62,7 @@ int main(){
     // Leitura e tratamento dos recordes
     FILE *scores_file;
     game.timer = clock() - game.timer;
-    scores_file = fopen("highscores", "w+");
+    scores_file = fopen("highscores", "a+");
 
     char str[24];
     char names[3][7];

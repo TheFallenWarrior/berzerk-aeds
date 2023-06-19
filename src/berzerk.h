@@ -11,18 +11,18 @@
 #define SCREEN_SIZE_Y 480
 #define CHARACTER_NAME_SIZE 6
 
-typedef struct HeroBullet{
+typedef struct Bullet{
     Rectangle pos;
     int active;
     int direction;
     int speed;
-} HeroBullet;
+} Bullet;
 
 typedef struct Hero{
     Texture2D texture;
     Rectangle pos;
     Color color;
-    HeroBullet bullets[2];
+    Bullet bullets[2];
     char name[CHARACTER_NAME_SIZE+1];
     int bullets_left;
     int direction;
@@ -31,8 +31,11 @@ typedef struct Hero{
 } Hero;
 
 typedef struct Enemy{
+    Texture2D texture;
     Rectangle pos;
     Color color;
+    Bullet bullets[2];
+    int type;
     int speed;
     int direction;
     int draw_enemy;

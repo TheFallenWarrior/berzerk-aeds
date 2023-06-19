@@ -16,7 +16,7 @@ void InitGame(Game *g){
     g->hero.speed = 4;
     g->hero.direction = KEY_DOWN;
     g->hero.bullets_left = 2;
-    g->hero.bullets[0] = (HeroBullet){
+    g->hero.bullets[0] = (Bullet){
         (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
         0,
         0,
@@ -205,7 +205,7 @@ void update_hero_pos(Game *g){
 
 void shoot_bullet(Game *g){
     Hero *h = &g->hero;
-    HeroBullet *hb = &h->bullets[2 - h->bullets_left];
+    Bullet *hb = &h->bullets[2 - h->bullets_left];
 
     if(h->bullets_left>0){
         hb->pos.x = h->pos.x-1 + (float)(STD_SIZE_X)/2;
@@ -219,10 +219,10 @@ void shoot_bullet(Game *g){
 }
 
 void update_bullet_pos(Game *g, int index){
-    HeroBullet *hb = &g->hero.bullets[index];
+    Bullet *hb = &g->hero.bullets[index];
     Map *m = &g->maps[g->curr_map];
 
-    HeroBullet blank_bullet = (HeroBullet){
+    Bullet blank_bullet = (Bullet){
         (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
         0,
         0,
@@ -344,6 +344,7 @@ void map0_setup(Game *g){
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
+        m->enemies[i].type = 0;
         m->enemies[i].pos = (Rectangle){(float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
         m->enemies[i].color = BLACK;
         m->enemies[i].speed = 4;
@@ -357,48 +358,51 @@ void map0_setup(Game *g){
 }
 
 void map1_setup(Game *g){
-    g->maps[1].num_barriers = 2;
-    g->maps[1].barriers[0] = (Rectangle){(float)3*g->screenWidth/4, 0, 5, 0.6 * g->screenHeight};
-    g->maps[1].barriers[1] = (Rectangle){(float)g->screenWidth/4, 0.4*g->screenHeight, 5, g->screenHeight};
-    g->maps[1].color = GRAY;
-    g->maps[1].door = (Rectangle){g->screenWidth-(SCREEN_BORDER+5), (float)g->screenHeight/3, SCREEN_BORDER, 50};
-    g->maps[1].prev_door = (Rectangle){SCREEN_BORDER, (float)g->screenHeight/3, 5, 50};
-    g->maps[1].num_enemies = 3;
-    g->maps[1].door_locked = 1;
+    Map *m = &g->maps[1];
+    m->num_barriers = 2;
+    m->barriers[0] = (Rectangle){(float)3*g->screenWidth/4, 0, 5, 0.6 * g->screenHeight};
+    m->barriers[1] = (Rectangle){(float)g->screenWidth/4, 0.4*g->screenHeight, 5, g->screenHeight};
+    m->color = GRAY;
+    m->door = (Rectangle){g->screenWidth-(SCREEN_BORDER+5), (float)g->screenHeight/3, SCREEN_BORDER, 50};
+    m->prev_door = (Rectangle){SCREEN_BORDER, (float)g->screenHeight/3, 5, 50};
+    m->num_enemies = 3;
+    m->door_locked = 1;
 
-    for(int i=0; i< g->maps[1].num_enemies; i++){
-        g->maps[1].enemies[i].pos = (Rectangle){ (float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
-        g->maps[1].enemies[i].color = BLACK;
-        g->maps[1].enemies[i].speed = 4;
-        g->maps[1].enemies[i].direction = KEY_RIGHT + (rand()%4);
-        g->maps[1].enemies[i].draw_enemy = 1;
-        g->maps[1].enemies[i].has_key = 0;
+    for(int i=0; i< m->num_enemies; i++){
+        m->enemies[i].type = 0;
+        m->enemies[i].pos = (Rectangle){ (float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
+        m->enemies[i].color = BLACK;
+        m->enemies[i].speed = 4;
+        m->enemies[i].direction = KEY_RIGHT + (rand()%4);
+        m->enemies[i].draw_enemy = 1;
+        m->enemies[i].has_key = 0;
     }
-    g->maps[1].enemies[0].has_key = 1;
-    g->maps[1].prev_map = 0;
-    g->maps[1].next_map = 2;
+    m->enemies[0].has_key = 1;
+    m->prev_map = 0;
+    m->next_map = 2;
 }
 
 void map2_setup(Game *g){
-    g->maps[2].num_barriers = 3;
-    g->maps[2].barriers[0] = (Rectangle){(float)g->screenWidth/4, 0, 2, 0.6 * g->screenHeight};
-    g->maps[2].barriers[1] = (Rectangle){(float)2*g->screenWidth/4, 0, 2, 0.6 * g->screenHeight};
-    g->maps[2].barriers[2] = (Rectangle){(float)3*g->screenWidth/4, 0, 2, 0.6 * g->screenHeight};
-    g->maps[2].color = GRAY;
-    g->maps[2].door = (Rectangle){(float)g->screenWidth-(SCREEN_BORDER+5), (float)g->screenHeight/3, SCREEN_BORDER, 50};
-    g->maps[2].prev_door = (Rectangle){SCREEN_BORDER, (float)g->screenHeight/3, 5, 50};
-    g->maps[2].num_enemies = 4;
-    g->maps[2].door_locked = 1;
+    Map *m = &g->maps[2];
+    m->num_barriers = 3;
+    m->barriers[0] = (Rectangle){(float)g->screenWidth/4, 0, 5, 0.6 * g->screenHeight};
+    m->barriers[1] = (Rectangle){(float)2*g->screenWidth/4, 0, 5, 0.6 * g->screenHeight};
+    m->barriers[2] = (Rectangle){(float)3*g->screenWidth/4, 0, 5, 0.6 * g->screenHeight};
+    m->color = GRAY;
+    m->door = (Rectangle){(float)g->screenWidth-(SCREEN_BORDER+5), (float)g->screenHeight/3, SCREEN_BORDER, 50};
+    m->prev_door = (Rectangle){SCREEN_BORDER, (float)g->screenHeight/3, 5, 50};
+    m->num_enemies = 4;
+    m->door_locked = 1;
 
-    for(int i=0; i< g->maps[2].num_enemies; i++){
-        g->maps[2].enemies[i].pos = (Rectangle){(float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
-        g->maps[2].enemies[i].color = BLACK;
-        g->maps[2].enemies[i].speed = 4;
-        g->maps[2].enemies[i].direction = KEY_RIGHT + (rand()%4);
-        g->maps[2].enemies[i].draw_enemy = 1;
-        g->maps[2].enemies[i].has_key = 0;
+    for(int i=0; i< m->num_enemies; i++){
+        m->enemies[i].pos = (Rectangle){(float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
+        m->enemies[i].color = BLACK;
+        m->enemies[i].speed = 4;
+        m->enemies[i].direction = KEY_RIGHT + (rand()%4);
+        m->enemies[i].draw_enemy = 1;
+        m->enemies[i].has_key = 0;
     }
-    g->maps[2].enemies[0].has_key = 1;
-    g->maps[2].prev_map = 1;
-    g->maps[2].next_map = 3;
+    m->enemies[0].has_key = 1;
+    m->prev_map = 1;
+    m->next_map = 3;
 }
