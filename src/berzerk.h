@@ -60,6 +60,7 @@ typedef struct Game{
     int num_maps;
     int curr_map;
     Hero hero;
+    int difficulty;
     int screenWidth;
     int screenHeight;
     int gameover;

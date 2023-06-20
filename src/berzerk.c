@@ -23,7 +23,6 @@ void InitGame(Game *g){
         8,
     };
     g->hero.bullets[1] = g->hero.bullets[0];
-    g->timer = clock();
     g->gameover = 0;
     map0_setup(g);
     map1_setup(g);

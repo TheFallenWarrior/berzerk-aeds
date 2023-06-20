@@ -1,5 +1,4 @@
 #include "berzerk.h"
-#include <stdio.h>
 
 //------------------------------------------------------------------------------------
 // Ponto de entrada do programa
@@ -50,8 +49,20 @@ int main(){
         if(letter_count >= 3)
             DrawText("Press Enter to continue", GetScreenWidth()/2 - MeasureText("Press Enter to continue", 20)/2, GetScreenHeight()/2 + 50, 20, GRAY);
         EndDrawing();
-        if(WindowShouldClose()) exit(0); // Detecta o pedido de fechamento do jogo
+        if(WindowShouldClose()) exit(0);
     }
+
+    while(!IsKeyPressed(KEY_ONE) && !IsKeyPressed(KEY_TWO)){
+        ClearBackground(RAYWHITE);
+        DrawText("Select your level", GetScreenWidth()/2 - MeasureText("Select your level", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
+        DrawText("1: Easy", GetScreenWidth()/2 - MeasureText("1: Easy", 20)/2, GetScreenHeight()/2 + 25, 20, GRAY);
+        DrawText("2: Hard", GetScreenWidth()/2 - MeasureText("2: Hard", 20)/2, GetScreenHeight()/2 + 50, 20, GRAY);
+        EndDrawing();
+        if(WindowShouldClose()) exit(0); 
+    }
+    if(IsKeyPressed(KEY_ONE)) game.difficulty = 1;
+    if(IsKeyPressed(KEY_TWO)) game.difficulty = 2;
+    game.timer = clock(); // Inicializa o timer do jogo
 
     while(1) { // Loop principal do jogo
         UpdateDrawFrame(&game);
@@ -86,8 +97,8 @@ int main(){
     for(int i=0;i<3;i++){
         fprintf(scores_file, "%d %s\n", highscores[i], names[i]);
     }
-
     fclose(scores_file);
+
     while(!IsKeyPressed(KEY_ENTER) && !WindowShouldClose()){ // Desenha a tela de gameover
         draw_highscores(names, highscores);
     }
