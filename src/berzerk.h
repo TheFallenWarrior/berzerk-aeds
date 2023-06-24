@@ -60,6 +60,7 @@ typedef struct Game{
     int num_maps;
     int curr_map;
     Hero hero;
+    Font font;
     int difficulty;
     int screenWidth;
     int screenHeight;
@@ -80,7 +81,8 @@ void UpdateDrawFrame(Game *g);  // Atualiza e desenha
 // Protótipos das funções auxiliares
 //------------------------------------------------------------------------------------
 
-void draw_highscores(char names[3][7], int *scores);
+void draw_st_text(Font font, char *str, float y_pos, Color color);
+void draw_highscores(Texture2D bg, Font font, char names[3][7], int *scores);
 void draw_borders(Game *g);
 void draw_map(Game *g);
 void update_enemy_pos(Game *g, Enemy *e);

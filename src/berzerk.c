@@ -117,15 +117,31 @@ void UpdateDrawFrame(Game *g){
     DrawGame(g);
 }
 
-void draw_highscores(char names[3][7], int *scores){
+// Mostra texto estilizado
+void draw_st_text(Font font, char *str, float y_pos, Color color){
+    DrawTextEx(
+        font,
+        str,
+        (Vector2){
+            -(MeasureTextEx(font, str, font.baseSize*2, 4).x/2) + (float)GetScreenWidth()/2,
+            y_pos
+        },
+        font.baseSize*2,
+        4,
+        color
+    );
+}
+
+void draw_highscores(Texture2D bg, Font font, char names[3][7], int *scores){
     BeginDrawing();
-    ClearBackground(RAYWHITE);
-    DrawText("Game Over", GetScreenWidth()/2 - MeasureText("Game Over", 20)/2, 100, 20, BLACK);
-    DrawText("Highscores", GetScreenWidth()/2 - MeasureText("Highscores", 20)/2, 200, 20, BLACK);
+    ClearBackground((Color){28, 16, 28, 255});
+    DrawTexture(bg, (GetScreenWidth() - bg.width)/2, 184, WHITE);
+    draw_st_text(font, "Game Over", 100, WHITE);
+    draw_st_text(font, "Highscores", 200, WHITE);
     for(int i=0;i<3;i++){
         char str[24];
         sprintf(str, "(%d) %s", scores[i], names[i]);
-        DrawText(str, GetScreenWidth()/2 - MeasureText(str, 20)/2, 250 + 50*i, 20, GRAY);
+        draw_st_text(font, str, 255 + 40*i, LIGHTGRAY);
     }
     EndDrawing();
 }

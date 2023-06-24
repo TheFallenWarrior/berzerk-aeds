@@ -9,19 +9,24 @@ int main(){
     game.screenWidth = SCREEN_SIZE_X;
     game.screenHeight = SCREEN_SIZE_Y;
 
-    InitWindow(game.screenWidth, game.screenHeight, "BERZRK");
+    InitWindow(game.screenWidth, game.screenHeight, "Berzerk");
     SetTargetFPS(60);
+
+    game.font = LoadFont("res/fnt/alpha_beta.png");
+    Texture2D logo = LoadTexture("res/gfx/title.png");
+    Texture2D box = LoadTexture("res/gfx/box.png");
 
     while(!IsKeyPressed(KEY_ENTER)){ // Desenha a tela de título antes do jogo começar
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawText("BERZRK", GetScreenWidth()/2 - MeasureText("BERZRK", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
-        DrawText("Press Enter to continue", GetScreenWidth()/2 - MeasureText("Press Enter to continue", 20)/2, GetScreenHeight()/2 + 25, 20, GRAY);
+        DrawTexture(logo, (GetScreenWidth() - logo.width)/2, 20, WHITE);
+        ClearBackground((Color){28, 16, 28, 255});
+        draw_st_text(game.font, "Press Enter to continue", (float)GetScreenHeight()/2 + 75, GRAY);
         EndDrawing();
         if(WindowShouldClose()) exit(0); // Detecta o pedido de fechamento do jogo
     }
     InitGame(&game); // Inicializa o jogo
- 
+    UnloadTexture(logo);
+
     int letter_count = 0;
     while(!IsKeyPressed(KEY_ENTER) || letter_count < 3){ // Tela de entrada do nome do jogador
         int key = GetCharPressed();
@@ -43,26 +48,29 @@ int main(){
         }
             
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawText("Input your name:", GetScreenWidth()/2 - MeasureText("Input your name:", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
-        DrawText(game.hero.name, GetScreenWidth()/2 - MeasureText(game.hero.name, 20)/2, GetScreenHeight()/2, 20, BLACK);
+        ClearBackground((Color){28, 16, 28, 255});
+        DrawTexture(box, (GetScreenWidth() - box.width)/2, 150, WHITE);
+        draw_st_text(game.font, "Input your name", (float)GetScreenHeight()/2 - 50, WHITE);
+        draw_st_text(game.font, game.hero.name, (float)GetScreenHeight()/2, WHITE);
         if(letter_count >= 3)
-            DrawText("Press Enter to continue", GetScreenWidth()/2 - MeasureText("Press Enter to continue", 20)/2, GetScreenHeight()/2 + 50, 20, GRAY);
+            draw_st_text(game.font, "Press Enter to continue", (float)GetScreenHeight()/2 + 50, LIGHTGRAY);
         EndDrawing();
         if(WindowShouldClose()) exit(0);
     }
 
     while(!IsKeyPressed(KEY_ONE) && !IsKeyPressed(KEY_TWO)){
-        ClearBackground(RAYWHITE);
-        DrawText("Select your level", GetScreenWidth()/2 - MeasureText("Select your level", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
-        DrawText("1: Easy", GetScreenWidth()/2 - MeasureText("1: Easy", 20)/2, GetScreenHeight()/2 + 25, 20, GRAY);
-        DrawText("2: Hard", GetScreenWidth()/2 - MeasureText("2: Hard", 20)/2, GetScreenHeight()/2 + 50, 20, GRAY);
+        ClearBackground((Color){28, 16, 28, 255});
+        DrawTexture(box, (GetScreenWidth() - box.width)/2, 150, WHITE);
+        draw_st_text(game.font, "Select your level", (float)GetScreenHeight()/2 - 50, WHITE);
+        draw_st_text(game.font, "1: Easy", (float)GetScreenHeight()/2 + 25, LIGHTGRAY);
+        draw_st_text(game.font, "2: Hard", (float)GetScreenHeight()/2 + 50, LIGHTGRAY);
         EndDrawing();
         if(WindowShouldClose()) exit(0); 
     }
     if(IsKeyPressed(KEY_ONE)) game.difficulty = 1;
     if(IsKeyPressed(KEY_TWO)) game.difficulty = 2;
     game.timer = clock(); // Inicializa o timer do jogo
+    UnloadTexture(box);
 
     while(1) { // Loop principal do jogo
         UpdateDrawFrame(&game);
@@ -99,8 +107,9 @@ int main(){
     }
     fclose(scores_file);
 
+    box = LoadTexture("res/gfx/box.png");
     while(!IsKeyPressed(KEY_ENTER) && !WindowShouldClose()){ // Desenha a tela de gameover
-        draw_highscores(names, highscores);
+        draw_highscores(box, game.font, names, highscores);
     }
     exit(0);
 }
