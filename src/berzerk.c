@@ -1,4 +1,6 @@
 #include "berzerk.h"
+#include <raylib.h>
+#include <stdlib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções do módulo
@@ -23,6 +25,11 @@ void InitGame(Game *g){
         8,
     };
     g->hero.bullets[1] = g->hero.bullets[0];
+    g->enemy_gfx[0] = LoadTexture("res/gfx/zombie.png");
+    g->enemy_gfx[1] = LoadTexture("res/gfx/knight.png");
+    g->enemy_gfx[2] = LoadTexture("res/gfx/soldier.png");
+    g->enemy_gfx[3] = LoadTexture("res/gfx/vampire.png");
+    g->enemy_gfx[4] = LoadTexture("res/gfx/magitek.png");
     g->gameover = 0;
     map0_setup(g);
     map1_setup(g);
@@ -104,7 +111,7 @@ void DrawGame(Game *g){
     DrawRectangleRec(h->bullets[1].pos, h->color);
     DrawTextureRec(
         h->texture,
-        (Rectangle){0+hero_sprite_offset+(h->current_frame*32), 0, 32, 48},
+        (Rectangle){hero_sprite_offset+(h->current_frame*32), 0, 32, 48},
         (Vector2){h->pos.x, h->pos.y - (h->texture.height-STD_SIZE_Y)},
         WHITE
     );
@@ -146,6 +153,38 @@ void draw_highscores(Texture2D bg, Font font, char names[3][7], int *scores){
     EndDrawing();
 }
 
+void draw_enemy(Enemy e, Texture2D texture){
+    int sprite_offset = 0;
+    if(!e.walking) e.current_frame = 0;
+    switch(e.direction){
+        case KEY_DOWN:
+            sprite_offset = 0;
+            break;
+
+        case KEY_UP:
+            sprite_offset = texture.width/2;
+            break;
+
+        case KEY_LEFT:
+            sprite_offset = 3 * (texture.width/4);
+            break;
+        
+        case KEY_RIGHT:
+            sprite_offset = texture.width/4;
+    }
+    DrawTextureRec(
+        texture,
+        (Rectangle){
+            sprite_offset+((float)e.current_frame*((float)texture.width/16)),
+            0,
+            (float)texture.width/16,
+            texture.height
+        },
+        (Vector2){e.pos.x, e.pos.y - (float)texture.height/2},
+        WHITE
+    );
+}
+
 void draw_borders(Game *g){
     DrawRectangle(0, 0, SCREEN_BORDER, g->screenHeight, BLACK);
     DrawRectangle(0, 0, g->screenWidth, SCREEN_BORDER, BLACK);
@@ -170,7 +209,7 @@ void draw_map(Game *g){
 
     for(int i=0; i< map->num_enemies; i++){
         if(!map->enemies[i].draw_enemy) continue;
-        DrawRectangleRec(map->enemies[i].pos, PINK);
+        draw_enemy(map->enemies[i], g->enemy_gfx[map->enemies[i].type]);
     }
 }
 
@@ -291,52 +330,64 @@ void update_bullet_pos(Game *g, int index){
 
 void update_enemy_pos(Game *g, Enemy *e){
     Map *m = &g->maps[g->curr_map];
+    static int frame_counter = 0;
 
-    if(e->direction == KEY_LEFT){
-        if(e->pos.x > SCREEN_BORDER)
-            e->pos.x -= e->speed;
-        else{
-            e->direction = KEY_RIGHT + (rand()%4);
-        }
-        if(barrier_collision(m, &e->pos)){
-            e->pos.x += e->speed;
-            e->direction = KEY_RIGHT + (rand()%4);
-        }
+    if(rand()%150 == 1)
+        e->walking = !e->walking;
 
-    } else if(e->direction == KEY_RIGHT){
-        if(e->pos.x + e->pos.width < g->screenWidth - SCREEN_BORDER)
-            e->pos.x += e->speed;
-        else
-            e->direction = KEY_RIGHT + (rand()%4);
-        
-        if(barrier_collision(m, &e->pos)){
-            e->pos.x -= e->speed;
-            e->direction = KEY_RIGHT + (rand()%4);
+    if(e->walking){
+        frame_counter++;
+        if(e->direction == KEY_LEFT){
+            if(e->pos.x > SCREEN_BORDER)
+                e->pos.x -= e->speed;
+            else{
+                e->direction = KEY_RIGHT + (rand()%4);
+            }
+            if(barrier_collision(m, &e->pos)){
+                e->pos.x += e->speed;
+                e->direction = KEY_RIGHT + (rand()%4);
+            }
+
+        } else if(e->direction == KEY_RIGHT){
+            if(e->pos.x + e->pos.width < g->screenWidth - SCREEN_BORDER)
+                e->pos.x += e->speed;
+            else
+                e->direction = KEY_RIGHT + (rand()%4);
+            
+            if(barrier_collision(m, &e->pos)){
+                e->pos.x -= e->speed;
+                e->direction = KEY_RIGHT + (rand()%4);
+            }
+            
+        } else if(e->direction == KEY_UP){
+            if(e->pos.y > SCREEN_BORDER)
+                e->pos.y -= e->speed;
+            else
+                e->direction = KEY_RIGHT + (rand()%4);
+            
+            if(barrier_collision(m, &e->pos)){
+                e->pos.y += e->speed;
+                e->direction = KEY_RIGHT + (rand()%4);
+            }
+        } else if(e->direction == KEY_DOWN){
+            if(e->pos.y + e->pos.height < g->screenHeight - SCREEN_BORDER)
+                e->pos.y += e->speed;
+            else
+                e->direction = KEY_RIGHT + (rand()%4);
+            
+            if(barrier_collision(m, &e->pos)){
+                e->pos.y -= e->speed;
+                e->direction = KEY_RIGHT + (rand()%4);
+            }
         }
-        
-    } else if(e->direction == KEY_UP){
-        if(e->pos.y > SCREEN_BORDER)
-            e->pos.y -= e->speed;
-        else
+        if(rand()%50 == 1) // 1% de chance do inimigo mudar de direção
             e->direction = KEY_RIGHT + (rand()%4);
-        
-        if(barrier_collision(m, &e->pos)){
-            e->pos.y += e->speed;
-            e->direction = KEY_RIGHT + (rand()%4);
+        if(frame_counter >= 15){
+            frame_counter = 0;
+            e->current_frame++;
         }
-    } else if(e->direction == KEY_DOWN){
-        if(e->pos.y + e->pos.height < g->screenHeight - SCREEN_BORDER)
-            e->pos.y += e->speed;
-        else
-            e->direction = KEY_RIGHT + (rand()%4);
-        
-        if(barrier_collision(m, &e->pos)){
-            e->pos.y -= e->speed;
-            e->direction = KEY_RIGHT + (rand()%4);
-        }
+        if(e->current_frame >= 4) e->current_frame = 0;
     }
-    if(rand()%100 == 1) // 1% de chance do inimigo mudar de direção
-        e->direction = KEY_RIGHT + (rand()%4);
 }
 
 int barrier_collision(Map *map, Rectangle *target){
@@ -346,6 +397,21 @@ int barrier_collision(Map *map, Rectangle *target){
         }
     }
     return 0;
+}
+
+void enemy_setup(Game *g, Enemy *e, int max_type){
+    e->walking = 0;
+    e->type = rand()%max_type;
+    e->pos = (Rectangle){
+        (float)2*g->screenWidth/3,
+        (float)2*g->screenHeight/3,
+        (float)g->enemy_gfx[e->type].width/16,
+        ((float)g->enemy_gfx[e->type].height/2)
+    };
+    e->speed = 3;
+    e->direction = KEY_RIGHT + (rand()%4);
+    e->draw_enemy = 1;
+    e->has_key = 0;
 }
 
 // Setup dos mapas
@@ -359,13 +425,7 @@ void map0_setup(Game *g){
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        m->enemies[i].type = 0;
-        m->enemies[i].pos = (Rectangle){(float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
-        m->enemies[i].color = BLACK;
-        m->enemies[i].speed = 4;
-        m->enemies[i].direction = KEY_RIGHT + (rand()%4);
-        m->enemies[i].draw_enemy = 1;
-        m->enemies[i].has_key = 0;
+        enemy_setup(g, &m->enemies[i], 1);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = -1;
@@ -384,13 +444,7 @@ void map1_setup(Game *g){
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        m->enemies[i].type = 0;
-        m->enemies[i].pos = (Rectangle){ (float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
-        m->enemies[i].color = BLACK;
-        m->enemies[i].speed = 4;
-        m->enemies[i].direction = KEY_RIGHT + (rand()%4);
-        m->enemies[i].draw_enemy = 1;
-        m->enemies[i].has_key = 0;
+        enemy_setup(g, &m->enemies[i], 4);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 0;
@@ -410,12 +464,7 @@ void map2_setup(Game *g){
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        m->enemies[i].pos = (Rectangle){(float)2*g->screenWidth/3, (float)2*g->screenHeight/3, STD_SIZE_X, STD_SIZE_Y};
-        m->enemies[i].color = BLACK;
-        m->enemies[i].speed = 4;
-        m->enemies[i].direction = KEY_RIGHT + (rand()%4);
-        m->enemies[i].draw_enemy = 1;
-        m->enemies[i].has_key = 0;
+        enemy_setup(g, &m->enemies[i], 5);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 1;

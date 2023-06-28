@@ -1,4 +1,5 @@
 #include "berzerk.h"
+#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Ponto de entrada do programa
@@ -10,13 +11,18 @@ int main(){
     game.screenHeight = SCREEN_SIZE_Y;
 
     InitWindow(game.screenWidth, game.screenHeight, "Berzerk");
+    InitAudioDevice();
     SetTargetFPS(60);
 
     game.font = LoadFont("res/fnt/alpha_beta.png");
     Texture2D logo = LoadTexture("res/gfx/title.png");
     Texture2D box = LoadTexture("res/gfx/box.png");
+    Music music = LoadMusicStream("res/bgm/intro.mp3");
+    Sound ting = LoadSound("res/snd/ting1.wav");
 
+    PlayMusicStream(music);
     while(!IsKeyPressed(KEY_ENTER)){ // Desenha a tela de título antes do jogo começar
+        UpdateMusicStream(music);
         BeginDrawing();
         DrawTexture(logo, (GetScreenWidth() - logo.width)/2, 20, WHITE);
         ClearBackground((Color){28, 16, 28, 255});
@@ -24,6 +30,7 @@ int main(){
         EndDrawing();
         if(WindowShouldClose()) exit(0); // Detecta o pedido de fechamento do jogo
     }
+    PlaySound(ting);
     InitGame(&game); // Inicializa o jogo
     UnloadTexture(logo);
 
@@ -46,19 +53,23 @@ int main(){
             if(letter_count < 0) letter_count = 0;
             game.hero.name[letter_count] = '\0';
         }
-            
+        
+        UpdateMusicStream(music);
         BeginDrawing();
         ClearBackground((Color){28, 16, 28, 255});
         DrawTexture(box, (GetScreenWidth() - box.width)/2, 150, WHITE);
-        draw_st_text(game.font, "Input your name", (float)GetScreenHeight()/2 - 50, WHITE);
+        draw_st_text(game.font, "Type your name", (float)GetScreenHeight()/2 - 50, WHITE);
         draw_st_text(game.font, game.hero.name, (float)GetScreenHeight()/2, WHITE);
         if(letter_count >= 3)
             draw_st_text(game.font, "Press Enter to continue", (float)GetScreenHeight()/2 + 50, LIGHTGRAY);
         EndDrawing();
         if(WindowShouldClose()) exit(0);
     }
+    PlaySound(ting);
 
     while(!IsKeyPressed(KEY_ONE) && !IsKeyPressed(KEY_TWO)){
+        UpdateMusicStream(music);
+        BeginDrawing();
         ClearBackground((Color){28, 16, 28, 255});
         DrawTexture(box, (GetScreenWidth() - box.width)/2, 150, WHITE);
         draw_st_text(game.font, "Select your level", (float)GetScreenHeight()/2 - 50, WHITE);
@@ -67,10 +78,12 @@ int main(){
         EndDrawing();
         if(WindowShouldClose()) exit(0); 
     }
+    PlaySound(ting);
     if(IsKeyPressed(KEY_ONE)) game.difficulty = 1;
     if(IsKeyPressed(KEY_TWO)) game.difficulty = 2;
     game.timer = clock(); // Inicializa o timer do jogo
     UnloadTexture(box);
+    UnloadMusicStream(music);
 
     while(1) { // Loop principal do jogo
         UpdateDrawFrame(&game);
