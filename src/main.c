@@ -1,5 +1,4 @@
 #include "berzerk.h"
-#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Ponto de entrada do programa
@@ -17,7 +16,7 @@ int main(){
     game.font = LoadFont("res/fnt/alpha_beta.png");
     Texture2D logo = LoadTexture("res/gfx/title.png");
     Texture2D box = LoadTexture("res/gfx/box.png");
-    Music music = LoadMusicStream("res/bgm/intro.mp3");
+    Music music = LoadMusicStream("res/bgm/theprelude.mp3");
     Sound ting = LoadSound("res/snd/ting1.wav");
 
     PlayMusicStream(music);
@@ -67,7 +66,7 @@ int main(){
     }
     PlaySound(ting);
 
-    while(!IsKeyPressed(KEY_ONE) && !IsKeyPressed(KEY_TWO)){
+    while(!IsKeyPressed(KEY_ONE) && !IsKeyPressed(KEY_TWO)){ // Tela de seleção de dificuldade
         UpdateMusicStream(music);
         BeginDrawing();
         ClearBackground((Color){28, 16, 28, 255});
@@ -81,7 +80,9 @@ int main(){
     PlaySound(ting);
     if(IsKeyPressed(KEY_ONE)) game.difficulty = 1;
     if(IsKeyPressed(KEY_TWO)) game.difficulty = 2;
+    game.hero.bullets_left = 3 - game.difficulty;
     game.timer = clock(); // Inicializa o timer do jogo
+
     UnloadTexture(box);
     UnloadMusicStream(music);
 

@@ -1,6 +1,4 @@
 #include "berzerk.h"
-#include <raylib.h>
-#include <stdlib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções do módulo
@@ -25,12 +23,30 @@ void InitGame(Game *g){
         8,
     };
     g->hero.bullets[1] = g->hero.bullets[0];
+    g->gameover = 0;
+
+    //Definição das informações globais dos inimigos por tipo
     g->enemy_gfx[0] = LoadTexture("res/gfx/zombie.png");
     g->enemy_gfx[1] = LoadTexture("res/gfx/knight.png");
     g->enemy_gfx[2] = LoadTexture("res/gfx/soldier.png");
     g->enemy_gfx[3] = LoadTexture("res/gfx/vampire.png");
     g->enemy_gfx[4] = LoadTexture("res/gfx/magitek.png");
-    g->gameover = 0;
+    g->enemy_types[0][0] = 0; // Zombie
+    g->enemy_types[0][1] = 3;
+    g->enemy_types[0][2] = 1;
+    g->enemy_types[1][0] = 1; // Knight
+    g->enemy_types[1][1] = 3;
+    g->enemy_types[1][2] = 2;
+    g->enemy_types[2][0] = 1; // SOLDIER
+    g->enemy_types[2][1] = 2;
+    g->enemy_types[2][2] = 1;
+    g->enemy_types[3][0] = 2; // Vampire
+    g->enemy_types[3][1] = 4;
+    g->enemy_types[3][2] = 4;
+    g->enemy_types[4][0] = 4; // Magitek
+    g->enemy_types[4][2] = 2;
+    g->enemy_types[4][1] = 3;
+
     map0_setup(g);
     map1_setup(g);
     map2_setup(g);
@@ -49,18 +65,20 @@ void UpdateGame(Game *g){
         if(!map->enemies[i].draw_enemy) continue;
         update_enemy_pos(g, &map->enemies[i]);
         if(CheckCollisionRecs(h->bullets[0].pos, map->enemies[i].pos)){
-            map->enemies[i].draw_enemy = 0;
-            if(map->enemies[i].has_key){
-                map->door_locked = 0;
-            }
+            map->enemies[i].hp--;
+            h->bullets_left = 3 - g->difficulty;
             h->bullets[0].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5};
         }
         if(CheckCollisionRecs(h->bullets[1].pos, map->enemies[i].pos)){
+            map->enemies[i].hp--;
+            h->bullets_left = 3 - g->difficulty;
+            h->bullets[1].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5};
+        }
+        if(map->enemies[i].hp <= 0){
             map->enemies[i].draw_enemy = 0;
             if(map->enemies[i].has_key){
                 map->door_locked = 0;
             }
-            h->bullets[1].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5};
         }
         if(!CheckCollisionRecs(h->pos, map->enemies[i].pos))
             continue;
@@ -81,40 +99,17 @@ void UpdateGame(Game *g){
 // Desenha a tela (um frame)
 void DrawGame(Game *g){
     Hero *h = &g->hero;
-    int hero_sprite_offset = 0;
 
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
     DrawRectangle(0, 0, g->screenWidth, g->screenHeight, GRAY);
     draw_borders(g);
-    draw_map(g);
-
-    switch (h->direction){
-        case KEY_DOWN:
-            hero_sprite_offset = 0;
-            break;
-        
-        case KEY_UP:
-            hero_sprite_offset = 256;
-            break;
-        
-        case KEY_LEFT:
-            hero_sprite_offset = 384;
-            break;
-        
-        case KEY_RIGHT:
-            hero_sprite_offset = 128;
-    }
-    
     DrawRectangleRec(h->bullets[0].pos, h->color);
     DrawRectangleRec(h->bullets[1].pos, h->color);
-    DrawTextureRec(
-        h->texture,
-        (Rectangle){hero_sprite_offset+(h->current_frame*32), 0, 32, 48},
-        (Vector2){h->pos.x, h->pos.y - (h->texture.height-STD_SIZE_Y)},
-        WHITE
-    );
+    draw_map(g);
+    draw_hero(*h);
+
     EndDrawing();
 }
 
@@ -151,6 +146,34 @@ void draw_highscores(Texture2D bg, Font font, char names[3][7], int *scores){
         draw_st_text(font, str, 255 + 40*i, LIGHTGRAY);
     }
     EndDrawing();
+}
+
+void draw_hero(Hero h){
+    int hero_sprite_offset = 0;
+
+    switch (h.direction){
+        case KEY_DOWN:
+            hero_sprite_offset = 0;
+            break;
+        
+        case KEY_UP:
+            hero_sprite_offset = 256;
+            break;
+        
+        case KEY_LEFT:
+            hero_sprite_offset = 384;
+            break;
+        
+        case KEY_RIGHT:
+            hero_sprite_offset = 128;
+    }
+    
+    DrawTextureRec(
+        h.texture,
+        (Rectangle){hero_sprite_offset+(h.current_frame*32), 0, 32, 48},
+        (Vector2){h.pos.x, h.pos.y - (h.texture.height-STD_SIZE_Y)},
+        WHITE
+    );
 }
 
 void draw_enemy(Enemy e, Texture2D texture){
@@ -218,8 +241,8 @@ void update_hero_pos(Game *g){
     Map *m = &g->maps[g->curr_map];
     static int frame_counter = 0;
 
-    update_bullet_pos(g, 0);
-    update_bullet_pos(g, 1);
+    update_bullet_pos(g, &h->bullets[0], &h->bullets_left, 3-g->difficulty);
+    update_bullet_pos(g, &h->bullets[1], &h->bullets_left, 3-g->difficulty);
 
     if(IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)){
         if(h->pos.x > SCREEN_BORDER)
@@ -255,77 +278,6 @@ void update_hero_pos(Game *g){
         h->current_frame++;
     }
     if(h->current_frame >= 4) h->current_frame = 0;
-}
-
-void shoot_bullet(Game *g){
-    Hero *h = &g->hero;
-    Bullet *hb = &h->bullets[2 - h->bullets_left];
-
-    if(h->bullets_left>0){
-        hb->pos.x = h->pos.x-1 + (float)(STD_SIZE_X)/2;
-        hb->pos.y = h->pos.y-1 + (float)(STD_SIZE_Y)/2;
-        hb->active = 1;
-        hb->direction = h->direction;
-        h->bullets_left--;
-        h->current_frame++;
-        if(h->current_frame >= 4) h->current_frame = 0;
-    }
-}
-
-void update_bullet_pos(Game *g, int index){
-    Bullet *hb = &g->hero.bullets[index];
-    Map *m = &g->maps[g->curr_map];
-
-    Bullet blank_bullet = (Bullet){
-        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
-        0,
-        0,
-        8,
-    };
-
-    if(hb->active){
-        switch(hb->direction){
-            case KEY_LEFT:
-                if(hb->pos.x > SCREEN_BORDER)
-                    hb->pos.x -= hb->speed;
-                else{
-                    *hb = blank_bullet;
-                    g->hero.bullets_left = 2;
-                }
-                break;
-            
-            case KEY_RIGHT:
-                if(hb->pos.x + hb->pos.width < g->screenWidth - SCREEN_BORDER)
-                    hb->pos.x += hb->speed;
-                else{
-                    *hb = blank_bullet;
-                    g->hero.bullets_left = 2;
-                }
-                break;
-            
-            case KEY_UP:
-                if(hb->pos.y > SCREEN_BORDER)
-                    hb->pos.y -= hb->speed;
-                else{
-                    *hb = blank_bullet;
-                    g->hero.bullets_left = 2;
-                }
-                break;
-            
-            case KEY_DOWN:
-                if(hb->pos.y + hb->pos.height < g->screenHeight - SCREEN_BORDER)
-                    hb->pos.y += hb->speed;
-                else{
-                    *hb = blank_bullet;
-                    g->hero.bullets_left = 2;
-                }
-                break;
-        }
-        if(barrier_collision(m, &hb->pos)){
-            *hb = blank_bullet;
-            g->hero.bullets_left = 2;
-        }
-    }
 }
 
 void update_enemy_pos(Game *g, Enemy *e){
@@ -390,6 +342,77 @@ void update_enemy_pos(Game *g, Enemy *e){
     }
 }
 
+void shoot_bullet(Game *g){
+    Hero *h = &g->hero;
+    Bullet *hb = &h->bullets[2 - h->bullets_left];
+
+    if(h->bullets_left>0){
+        hb->pos.x = h->pos.x-1 + (float)(STD_SIZE_X)/2;
+        hb->pos.y = h->pos.y-1 + (float)(STD_SIZE_Y)/2;
+        hb->active = 1;
+        hb->direction = h->direction;
+        h->bullets_left--;
+        h->current_frame++;
+        if(h->current_frame >= 4) h->current_frame = 0;
+    }
+}
+
+// Atualiza uma bala
+void update_bullet_pos(Game *g, Bullet *b, int *bullets_left, int max_bullets){
+    Map *m = &g->maps[g->curr_map];
+
+    Bullet blank_bullet = (Bullet){
+        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 5, 5},
+        0,
+        0,
+        8,
+    };
+
+    if(b->active){
+        switch(b->direction){
+            case KEY_LEFT:
+                if(b->pos.x > SCREEN_BORDER)
+                    b->pos.x -= b->speed;
+                else{
+                    *b = blank_bullet;
+                    *bullets_left = max_bullets;
+                }
+                break;
+            
+            case KEY_RIGHT:
+                if(b->pos.x + b->pos.width < g->screenWidth - SCREEN_BORDER)
+                    b->pos.x += b->speed;
+                else{
+                    *b = blank_bullet;
+                    *bullets_left = max_bullets;
+                }
+                break;
+            
+            case KEY_UP:
+                if(b->pos.y > SCREEN_BORDER)
+                    b->pos.y -= b->speed;
+                else{
+                    *b = blank_bullet;
+                    *bullets_left = max_bullets;
+                }
+                break;
+            
+            case KEY_DOWN:
+                if(b->pos.y + b->pos.height < g->screenHeight - SCREEN_BORDER)
+                    b->pos.y += b->speed;
+                else{
+                    *b = blank_bullet;
+                    *bullets_left = max_bullets;
+                }
+                break;
+        }
+        if(barrier_collision(m, &b->pos)){
+            *b = blank_bullet;
+            *bullets_left = max_bullets;
+        }
+    }
+}
+
 int barrier_collision(Map *map, Rectangle *target){
     for(int i = 0; i < map->num_barriers; i++){
         if(CheckCollisionRecs(*target, map->barriers[i])){
@@ -406,9 +429,10 @@ void enemy_setup(Game *g, Enemy *e, int max_type){
         (float)2*g->screenWidth/3,
         (float)2*g->screenHeight/3,
         (float)g->enemy_gfx[e->type].width/16,
-        ((float)g->enemy_gfx[e->type].height/2)
+        ((float)2*g->enemy_gfx[e->type].height/3)
     };
-    e->speed = 3;
+    e->hp = g->enemy_types[e->type][2];
+    e->speed = g->enemy_types[e->type][1];
     e->direction = KEY_RIGHT + (rand()%4);
     e->draw_enemy = 1;
     e->has_key = 0;
