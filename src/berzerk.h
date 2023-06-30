@@ -6,13 +6,17 @@
 #include <string.h>
 #include <time.h>
 
-#define BERZERK_H 1
-#define STD_SIZE_X 30
-#define STD_SIZE_Y 30
-#define SCREEN_BORDER 4
-#define SCREEN_SIZE_X 800
-#define SCREEN_SIZE_Y 480
-#define CHARACTER_NAME_SIZE 6
+#define BERZERK_H               1
+#define STD_SIZE_X              32
+#define STD_SIZE_Y              32
+#define SCREEN_BORDER           16
+#define SCREEN_SIZE_X           800
+#define SCREEN_SIZE_Y           480
+#define CHARACTER_NAME_SIZE     6
+#define EN_MAX_BULLETS          0
+#define EN_SPEED                1
+#define EN_HP                   2
+#define EN_SHOOTING_RANGE       20
 
 typedef struct Bullet{
     Rectangle pos;
@@ -95,8 +99,9 @@ void draw_enemy(Enemy e, Texture2D texture);
 void draw_borders(Game *g);
 void draw_map(Game *g);
 void update_hero_pos(Game *g);
-void update_enemy_pos(Game *g, Enemy *e);
+void update_enemy(Game *g, Enemy *e);
 void shoot_bullet(Game *g);
+void shoot_enemy_bullet(Game *g, Enemy *e);
 void update_bullet_pos(Game *g, Bullet *b, int *bullets_left,int max_bullets);
 
 int barrier_collision(Map *m, Rectangle *t);
@@ -104,5 +109,7 @@ void enemy_setup(Game *g, Enemy *e, int max_type);
 void map0_setup(Game *g);
 void map1_setup(Game *g);
 void map2_setup(Game *g);
+void map3_setup(Game *g);
+void map4_setup(Game *g);
 
 #endif
