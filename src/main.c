@@ -6,10 +6,7 @@
 int main(){
     Game game;
 
-    game.screenWidth = SCREEN_SIZE_X;
-    game.screenHeight = SCREEN_SIZE_Y;
-
-    InitWindow(game.screenWidth, game.screenHeight, "Berzerk");
+    InitWindow(SCREEN_SIZE_X, SCREEN_SIZE_Y, "Berzerk");
     InitAudioDevice();
     SetTargetFPS(60);
 

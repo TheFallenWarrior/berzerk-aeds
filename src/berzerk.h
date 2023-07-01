@@ -13,10 +13,21 @@
 #define SCREEN_SIZE_X           800
 #define SCREEN_SIZE_Y           480
 #define CHARACTER_NAME_SIZE     6
-#define EN_MAX_BULLETS          0
-#define EN_SPEED                1
-#define EN_HP                   2
 #define EN_SHOOTING_RANGE       20
+
+enum EnemyStats{
+    EnMaxBullets,
+    EnSpeed,
+    EnHP
+};
+
+enum EnemyTypes{
+    Zombie,
+    Knight,
+    Soldier,
+    Vampire,
+    Magitek
+};
 
 typedef struct Bullet{
     Rectangle pos;
@@ -27,6 +38,7 @@ typedef struct Bullet{
 
 typedef struct Hero{
     Texture2D texture;
+    Texture2D bullet_texture;
     Rectangle pos;
     Color color;
     Bullet bullets[2];
@@ -64,17 +76,20 @@ typedef struct Map{
     int prev_map;
 } Map;
 
+typedef struct EnemyGlobals{
+    Texture2D enemy_gfx[5];
+    Texture2D bullets_gfx;
+    int enemy_defs[5][3]; // enemy_defs[EnemyTypes][EnemyStats]
+} EnemyGlobals;
+
 typedef struct Game{ 
     Map maps[10];
     int num_maps;
     int curr_map;
     Hero hero;
     Font font;
-    Texture2D enemy_gfx[5];
-    int enemy_types[5][3]; // [n][0] = Qtde balas; [n][1] = Velocidade;  [n][3] = HP
+    EnemyGlobals en_globals;
     int difficulty;
-    int screenWidth;
-    int screenHeight;
     int gameover;
     clock_t timer;
 } Game;
@@ -105,11 +120,12 @@ void shoot_enemy_bullet(Game *g, Enemy *e);
 void update_bullet_pos(Game *g, Bullet *b, int *bullets_left,int max_bullets);
 
 int barrier_collision(Map *m, Rectangle *t);
-void enemy_setup(Game *g, Enemy *e, int max_type);
+void enemy_setup(Game *g, Enemy *e, int max_type, Map m);
 void map0_setup(Game *g);
 void map1_setup(Game *g);
 void map2_setup(Game *g);
 void map3_setup(Game *g);
 void map4_setup(Game *g);
+void map5_setup(Game *g);
 
 #endif
