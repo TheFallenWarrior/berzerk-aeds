@@ -61,6 +61,20 @@ void draw_hero(Hero h){
     );
 }
 
+// Mostra as balas de um inimigo
+void draw_enemy_bullets(Game *g, Enemy e){
+    for(int i=0;i<g->en_globals.enemy_defs[e.type][EnMaxBullets];i++){
+        if(e.bullets[i].active){
+            DrawTexture(
+                g->en_globals.bullets_gfx,
+                e.bullets[i].pos.x-2,
+                e.bullets[i].pos.y-2,
+                WHITE
+            );
+        }
+    }
+}
+
 void draw_enemy(Enemy e, Texture2D texture){
     int sprite_offset = 0;
     if(!e.walking) e.current_frame = 0;
@@ -93,6 +107,42 @@ void draw_enemy(Enemy e, Texture2D texture){
     );
 }
 
+void draw_boss(Game *g){
+    Map *m = &g->maps[8];
+    static int frame_counter = 0;
+
+    frame_counter++;
+    if(frame_counter >= 240) frame_counter = 0;
+
+    DrawTextureRec(
+        g->en_globals.enemy_gfx[SonOfMan],
+        (Rectangle){0, 0, 512, 336},
+        (Vector2){m->enemies[0].pos.x, m->enemies[0].pos.y},
+        WHITE
+    );
+    DrawTextureRec(
+        g->en_globals.enemy_gfx[SonOfMan],
+        (Rectangle){512, 0, 128, 80},
+        (Vector2){(float)SCREEN_SIZE_X/2 - 192, 176 + 12*sin(PI*(float)frame_counter/120)},
+        WHITE
+    );
+    DrawTextureRec(
+        g->en_globals.enemy_gfx[SonOfMan],
+        (Rectangle){512, 80, 128, 80},
+        (Vector2){(float)SCREEN_SIZE_X/2 + 64, 176 + 12*sin(PI*(float)frame_counter/120)},
+        WHITE
+    );
+}
+
+void draw_crystal(Game *g, Enemy e){
+    DrawTextureRec(
+        g->en_globals.enemy_gfx[Crystal],
+        (Rectangle){e.current_frame*80, 0, 80, 160},
+        (Vector2){e.pos.x, e.pos.y-80},
+        WHITE
+    );
+}
+
 void draw_borders(Game *g){
     DrawRectangle(0, 0, SCREEN_BORDER, SCREEN_SIZE_Y, BLACK);
     DrawRectangle(0, 0, SCREEN_SIZE_X, SCREEN_BORDER, BLACK);
@@ -116,18 +166,8 @@ void draw_map(Game *g){
     }
 
     for(int i=0;i<m->num_enemies;i++){
-        if(!m->enemies[i].draw_enemy) continue;
+        if(!m->enemies[i].hp) continue;
         draw_enemy(m->enemies[i], g->en_globals.enemy_gfx[m->enemies[i].type]);
-        // Mostra as balas do inimigo
-        for(int j=0;j<g->en_globals.enemy_defs[m->enemies[i].type][EnMaxBullets];j++){
-            if(m->enemies[i].bullets[j].active){
-                DrawTexture(
-                    g->en_globals.bullets_gfx,
-                    m->enemies[i].bullets[j].pos.x-2,
-                    m->enemies[i].bullets[j].pos.y-2,
-                    WHITE
-                );
-            }
-        }
+        draw_enemy_bullets(g, m->enemies[i]);
     }
 }

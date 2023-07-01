@@ -14,7 +14,7 @@ int main(){
     Texture2D logo = LoadTexture("res/gfx/title.png");
     Texture2D box = LoadTexture("res/gfx/box.png");
     Music music = LoadMusicStream("res/bgm/theprelude.mp3");
-    Sound ting = LoadSound("res/snd/ting1.wav");
+    Sound ting = LoadSound("res/snd/ting1.mp3");
 
     PlayMusicStream(music);
     while(!IsKeyPressed(KEY_ENTER)){ // Desenha a tela de título antes do jogo começar
@@ -83,11 +83,22 @@ int main(){
     UnloadTexture(box);
     UnloadMusicStream(music);
 
-    while(1) { // Loop principal do jogo
-        UpdateDrawFrame(&game);
-        if(game.gameover) break;
+    while(!game.gameover && !game.boss_trigger) { // Loop principal do jogo
+        UpdateGame(&game);
+        DrawGame(&game);
         if(WindowShouldClose()) exit(0);
     }
+
+    while(!game.gameover){ // Loop da batalha contra o boss final
+        UpdateBossBattle(&game);
+        DrawBossBattle(&game);
+        if(WindowShouldClose()) exit(0);
+    }
+
+    UnloadTexture(game.hero.bullet_texture);
+    UnloadTexture(game.hero.texture);
+    for(int i=0;i<7;i++) UnloadTexture(game.en_globals.enemy_gfx[i]);
+    UnloadTexture(game.en_globals.bullets_gfx);
 
     // Leitura e tratamento dos recordes
     FILE *scores_file;
@@ -122,5 +133,7 @@ int main(){
     while(!IsKeyPressed(KEY_ENTER) && !WindowShouldClose()){ // Desenha a tela de gameover
         draw_highscores(box, game.font, names, highscores);
     }
+
+    UnloadTexture(box);
     exit(0);
 }

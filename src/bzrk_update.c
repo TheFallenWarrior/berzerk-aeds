@@ -1,4 +1,7 @@
 #include "berzerk.h"
+#include <math.h>
+#include <raylib.h>
+#include <stdlib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções da lógica do jogo
@@ -131,6 +134,16 @@ void update_enemy(Game *g, Enemy *e){
 
 }
 
+void update_boss(Game *g, Enemy *e){
+    static int frame_counter = 0;
+    frame_counter++;
+    if(!(rand()%((e->type==SonOfMan)?15:75))) shoot_boss_bullet(g, e);
+    if(frame_counter >= 15){
+            frame_counter = 0;
+            e->current_frame++;
+    }
+}
+
 void shoot_bullet(Game *g){
     Hero *h = &g->hero;
     Bullet *hb = &h->bullets[2 - h->bullets_left];
@@ -139,22 +152,72 @@ void shoot_bullet(Game *g){
         hb->pos.x = h->pos.x-1 + (float)(STD_SIZE_X)/2;
         hb->pos.y = h->pos.y-1 + (float)(STD_SIZE_Y)/2;
         hb->active = 1;
-        hb->direction = h->direction;
         h->bullets_left--;
         h->current_frame++;
         if(h->current_frame >= 4) h->current_frame = 0;
+        switch(h->direction){
+            case KEY_UP:
+                hb->direction2 = (Vector2){0, -1};
+                break;
+
+            case KEY_DOWN:
+                hb->direction2 = (Vector2){0, 1};
+                break;
+
+            case KEY_LEFT:
+                hb->direction2 = (Vector2){-1, 0};
+                break;
+
+            case KEY_RIGHT:
+                hb->direction2 = (Vector2){1, 0};
+                break;
+        }
     }
 }
 
 void shoot_enemy_bullet(Game *g, Enemy *e){
     Bullet *eb = &e->bullets[g->en_globals.enemy_defs[e->type][EnMaxBullets] - e->bullets_left];
-    fflush(stdout);
     if(e->bullets_left>0){
         eb->pos.x = e->pos.x-3 + (float)(g->en_globals.enemy_gfx[e->type].width)/32;
         eb->pos.y = e->pos.y;
         eb->active = 1;
-        eb->direction = e->direction;
         e->bullets_left--;
+        switch(e->direction){
+            case KEY_UP:
+                eb->direction2 = (Vector2){0, -1};
+                break;
+
+            case KEY_DOWN:
+                eb->direction2 = (Vector2){0, 1};
+                break;
+
+            case KEY_LEFT:
+                eb->direction2 = (Vector2){-1, 0};
+                break;
+
+            case KEY_RIGHT:
+                eb->direction2 = (Vector2){1, 0};
+                break;
+        }
+    }
+}
+
+void shoot_boss_bullet(Game *g, Enemy *e){
+    Bullet *eb = &e->bullets[g->en_globals.enemy_defs[e->type][EnMaxBullets] - e->bullets_left];
+    float x;
+    if(e->bullets_left>0){
+        eb->active = 1;
+        e->bullets_left--;
+        if(e->type == SonOfMan){
+            x = PI * -((float)rand()/(float)(RAND_MAX));
+            eb->pos.x = (float)SCREEN_SIZE_X/2;
+            eb->pos.y = e->pos.y + (float)2*g->en_globals.enemy_gfx[e->type].height/3;
+        } else{
+            x = 2* PI * ((float)rand()/(float)(RAND_MAX));
+            eb->pos.x = e->pos.x + (float)g->en_globals.enemy_gfx[e->type].width/8;
+            eb->pos.y = e->pos.y;
+        }
+        eb->direction2 = (Vector2){cos(x), -sin(x)};
     }
 }
 
@@ -165,47 +228,19 @@ void update_bullet_pos(Game *g, Bullet *b, int *bullets_left, int max_bullets){
     Bullet blank_bullet = (Bullet){
         (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6},
         0,
-        0,
         8,
+        {0, 0}
     };
 
     if(b->active){
-        switch(b->direction){
-            case KEY_LEFT:
-                if(b->pos.x > SCREEN_BORDER)
-                    b->pos.x -= b->speed;
-                else{
-                    *b = blank_bullet;
-                    *bullets_left = max_bullets;
-                }
-                break;
-            
-            case KEY_RIGHT:
-                if(b->pos.x + b->pos.width < SCREEN_SIZE_X - SCREEN_BORDER)
-                    b->pos.x += b->speed;
-                else{
-                    *b = blank_bullet;
-                    *bullets_left = max_bullets;
-                }
-                break;
-            
-            case KEY_UP:
-                if(b->pos.y > SCREEN_BORDER)
-                    b->pos.y -= b->speed;
-                else{
-                    *b = blank_bullet;
-                    *bullets_left = max_bullets;
-                }
-                break;
-            
-            case KEY_DOWN:
-                if(b->pos.y + b->pos.height < SCREEN_SIZE_Y - SCREEN_BORDER)
-                    b->pos.y += b->speed;
-                else{
-                    *b = blank_bullet;
-                    *bullets_left = max_bullets;
-                }
-                break;
+        b->pos.x += b->speed*b->direction2.x;
+        b->pos.y += b->speed*b->direction2.y;
+        if(
+            (b->pos.x < SCREEN_BORDER) || (b->pos.x > SCREEN_SIZE_X - SCREEN_BORDER) ||
+            (b->pos.y < SCREEN_BORDER) || (b->pos.y > SCREEN_SIZE_Y - SCREEN_BORDER)
+        ){
+            *b = blank_bullet;
+            *bullets_left = max_bullets;
         }
         if(barrier_collision(m, &b->pos)){
             *b = blank_bullet;
