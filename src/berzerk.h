@@ -135,6 +135,8 @@ void map2_setup(Game *g);
 void map3_setup(Game *g);
 void map4_setup(Game *g);
 void map5_setup(Game *g);
+void map6_setup(Game *g);
+void map7_setup(Game *g);
 void boss_scene_setup(Game *g);
 
 #endif

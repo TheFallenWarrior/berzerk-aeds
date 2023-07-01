@@ -1,7 +1,4 @@
 #include "berzerk.h"
-#include <math.h>
-#include <raylib.h>
-#include <stdlib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções da lógica do jogo

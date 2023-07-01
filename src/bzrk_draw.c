@@ -23,7 +23,6 @@ void draw_highscores(Texture2D bg, Font font, char names[3][7], int *scores){
     BeginDrawing();
     ClearBackground((Color){28, 16, 28, 255});
     DrawTexture(bg, (GetScreenWidth() - bg.width)/2, 184, WHITE);
-    draw_st_text(font, "Game Over", 100, WHITE);
     draw_st_text(font, "Highscores", 200, WHITE);
     for(int i=0;i<3;i++){
         char str[24];

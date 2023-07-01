@@ -6,7 +6,7 @@
 
 // Inicializa a variáveis do jogo
 void InitGame(Game *g){
-    g->curr_map = 8;
+    g->curr_map = 0;
     g->num_maps = 10;
     strcpy(g->hero.name, "\0");
     g->hero.current_frame = 0;
@@ -24,7 +24,7 @@ void InitGame(Game *g){
     };
     g->hero.bullets[1] = g->hero.bullets[0];
     g->gameover = 0;
-    g->boss_trigger = 1;
+    g->boss_trigger = 0;
 
     //Definição das informações globais dos inimigos
     g->en_globals.bullets_gfx = LoadTexture("res/gfx/bullet2.png");
@@ -63,6 +63,8 @@ void InitGame(Game *g){
     map3_setup(g);
     map4_setup(g);
     map5_setup(g);
+    map6_setup(g);
+    map7_setup(g);
     boss_scene_setup(g);
 }
 
@@ -116,10 +118,12 @@ void UpdateGame(Game *g){
         h->pos = (Rectangle){50, 200, STD_SIZE_X, STD_SIZE_Y};
     }
 
-    if(m->prev_map != -1 && CheckCollisionRecs(h->pos, m->prev_door)){
+    if(CheckCollisionRecs(h->pos, m->prev_door)){
         g->curr_map = m->prev_map;
         h->pos = (Rectangle){SCREEN_SIZE_X-50, (float)SCREEN_SIZE_Y/3, STD_SIZE_X, STD_SIZE_Y};
    }
+
+   if(g->curr_map == 8) g->boss_trigger = 1;
 }
 
 // Desenha a tela (um frame)
@@ -158,7 +162,10 @@ void UpdateBossBattle(Game *g){
     if(IsKeyReleased(KEY_SPACE)) shoot_bullet(g);
     
     for(int i=0; i < m->num_enemies; i++){
-        if(!m->enemies[i].hp) continue;
+        if(!m->enemies[i].hp){
+            if(!i) g->gameover = 1;
+            else continue;
+        }
 
         if(i){
             num_crystals++;
@@ -192,8 +199,10 @@ void UpdateBossBattle(Game *g){
             h->bullets[1].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6};
         }
 
-        if(CheckCollisionRecs(h->pos, m->enemies[i].pos))
+        if(CheckCollisionRecs(h->pos, m->enemies[i].pos)){
+            g->boss_trigger = 0;
             g->gameover = 1;
+        }
     }
 
     if(!num_crystals) update_boss(g, &m->enemies[0]);
@@ -422,6 +431,26 @@ void map6_setup(Game *g){
     m->enemies[0].has_key = 1;
     m->prev_map = 5;
     m->next_map = 7;
+}
+
+void map7_setup(Game *g){
+    Map *m = &g->maps[7];
+    m->num_barriers = 3;
+    m->barriers[0] = (Rectangle){160, 112, 480, 32};
+    m->barriers[1] = (Rectangle){160, 336, 480, 32};
+    m->barriers[2] = (Rectangle){384, 192, 32, 96};
+    m->color = GRAY;
+    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->num_enemies = 6;
+    m->door_locked = 7;
+
+    for(int i=0; i< m->num_enemies; i++){
+        enemy_setup(g, &m->enemies[i], 5, *m);
+    }
+    m->enemies[0].has_key = 1;
+    m->prev_map = 6;
+    m->next_map = 8;
 }
 
 void boss_scene_setup(Game *g){
