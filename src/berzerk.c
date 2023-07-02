@@ -1,10 +1,11 @@
 #include "berzerk.h"
+#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Definições das funções do módulo
 //------------------------------------------------------------------------------------
 
-// Inicializa a variáveis do jogo
+// Inicialização a variáveis do jogo
 void InitGame(Game *g){
     g->curr_map = 0;
     g->num_maps = 10;
@@ -26,7 +27,11 @@ void InitGame(Game *g){
     g->gameover = 0;
     g->boss_trigger = 0;
 
-    //Definição das informações globais dos inimigos
+    // Texturas globais
+    g->grnd_texture = LoadTexture("res/gfx/ground.png");
+    g->wall_texture = LoadTexture("res/gfx/wall.png");
+
+    // Definição das informações globais dos inimigos
     g->en_globals.bullets_gfx = LoadTexture("res/gfx/bullet2.png");
     g->en_globals.enemy_gfx[Zombie]   = LoadTexture("res/gfx/zombie.png");
     g->en_globals.enemy_gfx[Soldier]  = LoadTexture("res/gfx/soldier.png");
@@ -115,12 +120,12 @@ void UpdateGame(Game *g){
 
     if(CheckCollisionRecs(h->pos, m->door) && !m->door_locked){
         g->curr_map = m->next_map;
-        h->pos = (Rectangle){50, 200, STD_SIZE_X, STD_SIZE_Y};
+        h->pos = (Rectangle){32, (float)SCREEN_SIZE_Y/2-24, STD_SIZE_X, STD_SIZE_Y};
     }
 
     if(CheckCollisionRecs(h->pos, m->prev_door)){
         g->curr_map = m->prev_map;
-        h->pos = (Rectangle){SCREEN_SIZE_X-50, (float)SCREEN_SIZE_Y/3, STD_SIZE_X, STD_SIZE_Y};
+        h->pos = (Rectangle){SCREEN_SIZE_X-64, (float)SCREEN_SIZE_Y/2-24, STD_SIZE_X, STD_SIZE_Y};
    }
 
    if(g->curr_map == 8) g->boss_trigger = 1;
@@ -205,7 +210,11 @@ void UpdateBossBattle(Game *g){
         }
     }
 
-    if(!num_crystals) update_boss(g, &m->enemies[0]);
+    if(num_crystals){
+        m->enemies[0].hp = g->en_globals.enemy_defs[SonOfMan][EnHP];
+        return;
+    }
+    update_boss(g, &m->enemies[0]);
 }
 
 // Desenha a batalha final (um frame)
@@ -317,10 +326,10 @@ void map1_setup(Game *g){
 void map2_setup(Game *g){
     Map *m = &g->maps[2];
     m->num_barriers = 6;
-    m->barriers[0] = (Rectangle){0, 150, 200, 32};
-    m->barriers[1] = (Rectangle){0, 250, 200, 32};
-    m->barriers[2] = (Rectangle){600, 150, 200, 32};
-    m->barriers[3] = (Rectangle){600, 250, 200, 32};
+    m->barriers[0] = (Rectangle){0, 176, 200, 32};
+    m->barriers[1] = (Rectangle){0, 272, 200, 32};
+    m->barriers[2] = (Rectangle){600, 176, 200, 32};
+    m->barriers[3] = (Rectangle){600, 272, 200, 32};
     m->barriers[4] = (Rectangle){(float)SCREEN_SIZE_X/2-168, 16, 336, 32};
     m->barriers[5] = (Rectangle){(float)SCREEN_SIZE_X/2-168, SCREEN_SIZE_Y-48, 336, 32};
     m->color = GRAY;
@@ -409,16 +418,12 @@ void map5_setup(Game *g){
 
 void map6_setup(Game *g){
     Map *m = &g->maps[6];
-    m->num_barriers = 9;
-    m->barriers[0] = (Rectangle){16, 176, 32, 32};
-    m->barriers[1] = (Rectangle){16, 272, 32, 32};
-    m->barriers[2] = (Rectangle){SCREEN_SIZE_X-48, 176, 32, 32};
-    m->barriers[3] = (Rectangle){SCREEN_SIZE_X-48, 272, 32, 32};
-    m->barriers[4] = (Rectangle){240, 224, 112, 32};
-    m->barriers[5] = (Rectangle){448, 224, 112, 32};
-    m->barriers[6] = (Rectangle){384, 80, 32, 112};
-    m->barriers[7] = (Rectangle){384, 288, 32, 112};
-    m->barriers[8] = (Rectangle){384, 224, 32, 32};
+    m->num_barriers = 5;
+    m->barriers[0] = (Rectangle){16, 288, 272, 32};
+    m->barriers[1] = (Rectangle){288, 288, 32, 96};
+    m->barriers[2] = (Rectangle){512, 160, 272, 32};
+    m->barriers[3] = (Rectangle){480, 96, 32, 96};
+    m->barriers[4] = (Rectangle){384, 224, 32, 32};
     m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
@@ -468,27 +473,17 @@ void boss_scene_setup(Game *g){
         }
     }
     m->enemies[0].type = SonOfMan;
-    m->enemies[0].hp = 20;
-    m->enemies[0].bullets_left = 20;
+    m->enemies[0].hp = g->en_globals.enemy_defs[SonOfMan][EnHP];
+    m->enemies[0].bullets_left = g->en_globals.enemy_defs[SonOfMan][EnMaxBullets];
+    for(int i=1;i<=4;i++){
+        m->enemies[i].type = Crystal;
+        m->enemies[i].current_frame = 0;
+        m->enemies[i].hp = g->en_globals.enemy_defs[Crystal][EnHP];
+        m->enemies[i].bullets_left = g->en_globals.enemy_defs[Crystal][EnMaxBullets];
+    }
     m->enemies[0].pos = (Rectangle){(float)SCREEN_SIZE_X/2-256, -16, 512, 232};
-    m->enemies[1].type = Crystal;
-    m->enemies[1].current_frame = 0;
-    m->enemies[1].hp = 10;
-    m->enemies[1].bullets_left = 10;
     m->enemies[1].pos = (Rectangle){60, 80, 80, 80};
-    m->enemies[2].type = Crystal;
-    m->enemies[2].current_frame = 0;
-    m->enemies[2].hp = 10;
-    m->enemies[2].bullets_left = 10;
     m->enemies[2].pos = (Rectangle){SCREEN_SIZE_X-140, 80, 80, 80};
-    m->enemies[3].type = Crystal;
-    m->enemies[3].current_frame = 0;
-    m->enemies[3].hp = 10;
-    m->enemies[3].bullets_left = 10;
     m->enemies[3].pos = (Rectangle){160, 384, 80, 80};
-    m->enemies[4].type = Crystal;
-    m->enemies[4].current_frame = 0;
-    m->enemies[4].hp = 10;
-    m->enemies[4].bullets_left = 10;
     m->enemies[4].pos = (Rectangle){SCREEN_SIZE_X-240, 384, 80, 80};
 }

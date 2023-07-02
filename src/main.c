@@ -1,4 +1,5 @@
 #include "berzerk.h"
+#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Ponto de entrada do programa
@@ -16,8 +17,8 @@ int main(){
         Texture2D box = LoadTexture("res/gfx/box.png");
         Music music = LoadMusicStream("res/bgm/theprelude.mp3");
         Sound ting = LoadSound("res/snd/ting1.mp3");
-
         PlayMusicStream(music);
+
         while(!IsKeyPressed(KEY_ENTER)){ // Desenha a tela de título antes do jogo começar
             UpdateMusicStream(music);
             BeginDrawing();
@@ -83,23 +84,34 @@ int main(){
 
         UnloadTexture(box);
         UnloadMusicStream(music);
+        music = LoadMusicStream("res/bgm/thesilentlight.mp3");
+        PlayMusicStream(music);
 
         while(!game.gameover && !game.boss_trigger) { // Loop principal do jogo
+            UpdateMusicStream(music);
             UpdateGame(&game);
             DrawGame(&game);
             if(WindowShouldClose()) exit(0);
         }
 
+        UnloadMusicStream(music);
+        music = LoadMusicStream("res/bgm/themastermind.mp3");
+        PlayMusicStream(music);
+
         while(!game.gameover){ // Loop da batalha contra o boss final
+            UpdateMusicStream(music);
             UpdateBossBattle(&game);
             DrawBossBattle(&game);
             if(WindowShouldClose()) exit(0);
         }
 
+        UnloadMusicStream(music);
         UnloadTexture(game.hero.bullet_texture);
         UnloadTexture(game.hero.texture);
         for(int i=0;i<7;i++) UnloadTexture(game.en_globals.enemy_gfx[i]);
         UnloadTexture(game.en_globals.bullets_gfx);
+        music = LoadMusicStream("res/bgm/thehero.mp3");
+        PlayMusicStream(music);
 
         // Leitura e tratamento dos recordes
         FILE *scores_file;
@@ -132,6 +144,7 @@ int main(){
 
         box = LoadTexture("res/gfx/box.png");
         while(!IsKeyPressed(KEY_R)){ // Desenha a tela de gameover
+            UpdateMusicStream(music);
             draw_st_text(game.font, ((game.boss_trigger)?"The End":"Game Over"), 100, WHITE);
             draw_highscores(box, game.font, names, highscores);
             draw_st_text(game.font, "Press 'R' to restart", 424, GRAY);

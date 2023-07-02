@@ -74,6 +74,8 @@ typedef struct Game{
     Hero hero;
     Font font;
     EnemyGlobals en_globals;
+    Texture2D wall_texture;
+    Texture2D grnd_texture;
     int difficulty;
     int boss_trigger;
     int gameover;
