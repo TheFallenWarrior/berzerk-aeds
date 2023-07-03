@@ -66,8 +66,8 @@ void draw_enemy_bullets(Game *g, Enemy e){
         if(e.bullets[i].active){
             DrawTexture(
                 g->en_globals.bullets_gfx,
-                e.bullets[i].pos.x-2,
-                e.bullets[i].pos.y-2,
+                e.bullets[i].pos.x-4,
+                e.bullets[i].pos.y-4,
                 WHITE
             );
         }
@@ -143,16 +143,41 @@ void draw_crystal(Game *g, Enemy e){
 }
 
 void draw_borders(Game *g){
-    DrawRectangle(0, 0, SCREEN_BORDER, SCREEN_SIZE_Y, BLACK);
-    DrawRectangle(0, 0, SCREEN_SIZE_X, SCREEN_BORDER, BLACK);
-    DrawRectangle(SCREEN_SIZE_X-SCREEN_BORDER, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y, BLACK);
-    DrawRectangle(0, SCREEN_SIZE_Y-SCREEN_BORDER, SCREEN_SIZE_X, SCREEN_SIZE_Y, BLACK);
+    DrawTextureRec(
+        g->wall_texture,
+        (Rectangle){0, 0, SCREEN_BORDER, SCREEN_SIZE_Y},
+        (Vector2){0, 0},
+        WHITE
+    );
+    DrawTextureRec(
+        g->wall_texture,
+        (Rectangle){0, 16, SCREEN_SIZE_X, SCREEN_BORDER},
+        (Vector2){0, 0},
+        WHITE
+    );
+    DrawTextureRec(
+        g->wall_texture,
+        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
+        (Vector2){SCREEN_SIZE_X-SCREEN_BORDER, 0},
+        WHITE
+    );
+    DrawTextureRec(
+        g->wall_texture,
+        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
+        (Vector2){0, SCREEN_SIZE_Y-SCREEN_BORDER},
+        WHITE
+    );
 }
 
 void draw_map(Game *g){
     Map *m = &g->maps[g->curr_map];
     for(int i = 0; i < m->num_barriers; i++){
-        DrawRectangleRec(m->barriers[i], BLACK);
+        DrawTextureRec(
+            g->wall_texture,
+            (Rectangle){0, 0, m->barriers[i].width, m->barriers[i].height},
+            (Vector2){m->barriers[i].x, m->barriers[i].y},
+            WHITE
+        );
     }
 
     if(m->door_locked)

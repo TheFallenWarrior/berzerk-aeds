@@ -1,6 +1,4 @@
 #include "berzerk.h"
-#include <raylib.h>
-
 //------------------------------------------------------------------------------------
 // Definições das funções do módulo
 //------------------------------------------------------------------------------------
@@ -30,6 +28,14 @@ void InitGame(Game *g){
     // Texturas globais
     g->grnd_texture = LoadTexture("res/gfx/ground.png");
     g->wall_texture = LoadTexture("res/gfx/wall.png");
+
+    //Sons globais
+    g->general_sfx[SnPlayerAttack]  = LoadSound("res/snd/attack1.mp3");
+    g->general_sfx[SnEnemyAttack]   = LoadSound("res/snd/gun.mp3");
+    g->general_sfx[SnEnemyDeath]    = LoadSound("res/snd/enmydeath.mp3");
+    g->general_sfx[SnSonOfMan1]     = LoadSound("res/snd/sonofman.mp3");
+    g->general_sfx[SnSonOfMan2]     = LoadSound("res/snd/sonofman2.mp3");
+    g->general_sfx[SnBossAttack]    = LoadSound("res/snd/bossattack.mp3");
 
     // Definição das informações globais dos inimigos
     g->en_globals.bullets_gfx = LoadTexture("res/gfx/bullet2.png");
@@ -110,6 +116,7 @@ void UpdateGame(Game *g){
             h->bullets[1].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6};
         }
         if(m->enemies[i].hp <= 0){
+            PlaySound(g->general_sfx[SnEnemyDeath]);
             if(m->enemies[i].has_key){
                 m->door_locked = 0;
             }
@@ -138,7 +145,12 @@ void DrawGame(Game *g){
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
-    DrawRectangle(0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y, GRAY);
+    DrawTextureRec(
+        g->grnd_texture,
+        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
+        (Vector2){0, 0},
+        WHITE
+    );
     draw_borders(g);
     DrawTexture(
         h->bullet_texture,
@@ -204,6 +216,11 @@ void UpdateBossBattle(Game *g){
             h->bullets[1].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6};
         }
 
+        if(m->enemies[i].hp <= 0){
+            if(num_crystals == 1) PlaySound(g->general_sfx[SnSonOfMan2]);
+            PlaySound(g->general_sfx[SnEnemyDeath]);
+        }
+
         if(CheckCollisionRecs(h->pos, m->enemies[i].pos)){
             g->boss_trigger = 0;
             g->gameover = 1;
@@ -225,8 +242,12 @@ void DrawBossBattle(Game *g){
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
-    DrawRectangle(0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y, GRAY);
-
+    DrawTextureRec(
+        g->grnd_texture,
+        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
+        (Vector2){0, 0},
+        WHITE
+    );
     DrawTexture(
         h->bullet_texture,
         h->bullets[0].pos.x-2,
@@ -265,8 +286,8 @@ void enemy_setup(Game *g, Enemy *e, int max_type, Map m){
     e->type = rand()%max_type;
     do{
         e->pos = (Rectangle){
-            (float)184+rand()%576,
-            (float)16+rand()%(SCREEN_SIZE_Y-64),
+            (float)184+rand()%536,
+            (float)SCREEN_BORDER+rand()%(SCREEN_SIZE_Y-64),
             (float)g->en_globals.enemy_gfx[e->type].width/16,
             ((float)g->en_globals.enemy_gfx[e->type].height/2)
         };
@@ -290,7 +311,7 @@ void enemy_setup(Game *g, Enemy *e, int max_type, Map m){
 void map0_setup(Game *g){
     Map *m = &g->maps[0];
     m->num_barriers = 1;
-    m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 0, 32, 0.65*SCREEN_SIZE_Y};
+    m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 16, 32, 0.65*SCREEN_SIZE_Y};
     m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->door_locked = 1;
@@ -307,7 +328,7 @@ void map0_setup(Game *g){
 void map1_setup(Game *g){
     Map *m = &g->maps[1];
     m->num_barriers = 2;
-    m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 0, 32, 0.6*SCREEN_SIZE_Y};
+    m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 16, 32, 0.6*SCREEN_SIZE_Y};
     m->barriers[1] = (Rectangle){(float)2*SCREEN_SIZE_X/5, (float)SCREEN_SIZE_Y/2, 32, SCREEN_SIZE_Y};
     m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
@@ -326,8 +347,8 @@ void map1_setup(Game *g){
 void map2_setup(Game *g){
     Map *m = &g->maps[2];
     m->num_barriers = 6;
-    m->barriers[0] = (Rectangle){0, 176, 200, 32};
-    m->barriers[1] = (Rectangle){0, 272, 200, 32};
+    m->barriers[0] = (Rectangle){16, 176, 200, 32};
+    m->barriers[1] = (Rectangle){16, 272, 200, 32};
     m->barriers[2] = (Rectangle){600, 176, 200, 32};
     m->barriers[3] = (Rectangle){600, 272, 200, 32};
     m->barriers[4] = (Rectangle){(float)SCREEN_SIZE_X/2-168, 16, 336, 32};
@@ -349,9 +370,9 @@ void map2_setup(Game *g){
 void map3_setup(Game *g){
     Map *m = &g->maps[3];
     m->num_barriers = 3;
-    m->barriers[0] = (Rectangle){(float)SCREEN_SIZE_X/4-16, 0, 32, 0.6 * SCREEN_SIZE_Y};
-    m->barriers[1] = (Rectangle){(float)2*SCREEN_SIZE_X/4-16, 0, 32, 0.6 * SCREEN_SIZE_Y};
-    m->barriers[2] = (Rectangle){(float)3*SCREEN_SIZE_X/4-16, 0, 32, 0.6 * SCREEN_SIZE_Y};
+    m->barriers[0] = (Rectangle){(float)SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
+    m->barriers[1] = (Rectangle){(float)2*SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
+    m->barriers[2] = (Rectangle){(float)3*SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
     m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};

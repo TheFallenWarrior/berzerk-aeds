@@ -73,6 +73,7 @@ typedef struct Game{
     int curr_map;
     Hero hero;
     Font font;
+    Sound general_sfx[6]; // general_sfx[GeneralSounds]
     EnemyGlobals en_globals;
     Texture2D wall_texture;
     Texture2D grnd_texture;
@@ -96,6 +97,15 @@ enum EnemyTypes{
     Vampire,
     SonOfMan,
     Crystal
+};
+
+enum GeneralSounds{
+    SnPlayerAttack,
+    SnEnemyAttack,
+    SnEnemyDeath,
+    SnSonOfMan1,
+    SnSonOfMan2,
+    SnBossAttack
 };
 
 //------------------------------------------------------------------------------------

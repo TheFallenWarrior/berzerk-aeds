@@ -146,6 +146,7 @@ void shoot_bullet(Game *g){
     Bullet *hb = &h->bullets[2 - h->bullets_left];
 
     if(h->bullets_left>0){
+        PlaySound(g->general_sfx[SnPlayerAttack]);
         hb->pos.x = h->pos.x-1 + (float)(STD_SIZE_X)/2;
         hb->pos.y = h->pos.y-1 + (float)(STD_SIZE_Y)/2;
         hb->active = 1;
@@ -175,6 +176,7 @@ void shoot_bullet(Game *g){
 void shoot_enemy_bullet(Game *g, Enemy *e){
     Bullet *eb = &e->bullets[g->en_globals.enemy_defs[e->type][EnMaxBullets] - e->bullets_left];
     if(e->bullets_left>0){
+        PlaySound(g->general_sfx[SnEnemyAttack]);
         eb->pos.x = e->pos.x-3 + (float)(g->en_globals.enemy_gfx[e->type].width)/32;
         eb->pos.y = e->pos.y;
         eb->active = 1;
@@ -203,6 +205,7 @@ void shoot_boss_bullet(Game *g, Enemy *e){
     Bullet *eb = &e->bullets[g->en_globals.enemy_defs[e->type][EnMaxBullets] - e->bullets_left];
     float x;
     if(e->bullets_left>0){
+        PlaySound(g->general_sfx[SnBossAttack]);
         eb->active = 1;
         e->bullets_left--;
         if(e->type == SonOfMan){

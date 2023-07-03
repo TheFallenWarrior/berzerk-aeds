@@ -1,5 +1,4 @@
 #include "berzerk.h"
-#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Ponto de entrada do programa
@@ -97,6 +96,7 @@ int main(){
         UnloadMusicStream(music);
         music = LoadMusicStream("res/bgm/themastermind.mp3");
         PlayMusicStream(music);
+        if(!game.gameover) PlaySound(game.general_sfx[SnSonOfMan1]);
 
         while(!game.gameover){ // Loop da batalha contra o boss final
             UpdateMusicStream(music);
@@ -150,8 +150,8 @@ int main(){
             draw_st_text(game.font, "Press 'R' to restart", 424, GRAY);
             if(WindowShouldClose()) exit(0);
         }
-
         UnloadTexture(box);
+        PlaySound(ting);
     }
     exit(0);
 }
