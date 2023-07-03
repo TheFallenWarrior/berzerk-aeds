@@ -129,7 +129,7 @@ int main(){
         fclose(scores_file);
         for(int i=0;i<3;i++){
             if(!highscores[i]) strcpy(names[i], "");
-            if(current_score > highscores[i]){
+            if(current_score > highscores[i] && game.boss_trigger){
                 strcpy(names[i], game.hero.name);
                 highscores[i] = (int)current_score;
                 break;
