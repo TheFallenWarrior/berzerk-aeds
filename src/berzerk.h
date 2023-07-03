@@ -103,8 +103,8 @@ enum GeneralSounds{
     SnPlayerAttack,
     SnEnemyAttack,
     SnEnemyDeath,
-    SnSonOfMan1,
-    SnSonOfMan2,
+    SnBossCry1,
+    SnBossCry2,
     SnBossAttack
 };
 
@@ -113,6 +113,7 @@ enum GeneralSounds{
 //------------------------------------------------------------------------------------
 
 void InitGame(Game *g);         // Inicializa a variáveis do jogo
+void UnloadResources(Game *g);  // Limpa os recursos carragados em InitGame()
 void UpdateGame(Game *g);       // Atualiza o jogo (um frame)
 void DrawGame(Game *g);         // Desenha a tela (um frame)
 void UpdateBossBattle(Game *g); // Atualiza a batalha final (um frame)

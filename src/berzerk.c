@@ -34,8 +34,8 @@ void InitGame(Game *g){
     g->general_sfx[SnPlayerAttack]  = LoadSound("res/snd/attack1.mp3");
     g->general_sfx[SnEnemyAttack]   = LoadSound("res/snd/gun.mp3");
     g->general_sfx[SnEnemyDeath]    = LoadSound("res/snd/enmydeath.mp3");
-    g->general_sfx[SnSonOfMan1]     = LoadSound("res/snd/sonofman.mp3");
-    g->general_sfx[SnSonOfMan2]     = LoadSound("res/snd/sonofman2.mp3");
+    g->general_sfx[SnBossCry1]      = LoadSound("res/snd/sonofman.mp3");
+    g->general_sfx[SnBossCry2]      = LoadSound("res/snd/sonofman2.mp3");
     g->general_sfx[SnBossAttack]    = LoadSound("res/snd/bossattack.mp3");
 
     // Definição das informações globais dos inimigos
@@ -78,6 +78,17 @@ void InitGame(Game *g){
     map6_setup(g);
     map7_setup(g);
     boss_scene_setup(g);
+}
+
+// Limpa os recursos carragados em InitGame()
+void UnloadResources(Game *g){
+    UnloadTexture(g->hero.texture);
+    UnloadTexture(g->hero.bullet_texture);
+    UnloadTexture(g->en_globals.bullets_gfx);
+    UnloadTexture(g->grnd_texture);
+    UnloadTexture(g->wall_texture);
+    for(int i=0;i<6;i++) UnloadSound(g->general_sfx[i]);
+    for(int i=0;i<7;i++) UnloadTexture(g->en_globals.enemy_gfx[i]);
 }
 
 // Atualiza o jogo (um frame)
@@ -218,7 +229,7 @@ void UpdateBossBattle(Game *g){
         }
 
         if(m->enemies[i].hp <= 0){
-            if(num_crystals == 1) PlaySound(g->general_sfx[SnSonOfMan2]);
+            if(num_crystals == 1) PlaySound(g->general_sfx[SnBossCry2]);
             PlaySound(g->general_sfx[SnEnemyDeath]);
         }
 
