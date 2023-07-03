@@ -1,4 +1,5 @@
 #include "berzerk.h"
+#include <raylib.h>
 
 //------------------------------------------------------------------------------------
 // Ponto de entrada do programa
@@ -9,13 +10,13 @@ int main(){
     InitWindow(SCREEN_SIZE_X, SCREEN_SIZE_Y, "Berzerk");
     InitAudioDevice();
     SetTargetFPS(60);
+    Sound ting = LoadSound("res/snd/ting1.mp3");
+    game.font = LoadFont("res/fnt/alpha_beta.png");
 
     while(1){ 
-        game.font = LoadFont("res/fnt/alpha_beta.png");
         Texture2D logo = LoadTexture("res/gfx/title.png");
         Texture2D box = LoadTexture("res/gfx/box.png");
         Music music = LoadMusicStream("res/bgm/theprelude.mp3");
-        Sound ting = LoadSound("res/snd/ting1.mp3");
         PlayMusicStream(music);
 
         while(!IsKeyPressed(KEY_ENTER)){ // Desenha a tela de título antes do jogo começar
@@ -151,6 +152,7 @@ int main(){
             if(WindowShouldClose()) exit(0);
         }
         UnloadTexture(box);
+        UnloadMusicStream(music);
         PlaySound(ting);
     }
     exit(0);
