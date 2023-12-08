@@ -1,10 +1,6 @@
 #ifndef BERZERK_H
 
 #include <raylib.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 #include <time.h>
 
 #define BERZERK_H               1

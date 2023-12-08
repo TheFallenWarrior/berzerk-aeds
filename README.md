@@ -5,11 +5,11 @@ A reimagining of Atari 2600's 'Berzerk'. Made as a college work for the Algorith
 ## Directory Contents:
 `src/`: contains `*.c` and `*.h` files
 <br>
-`res/bgm`: contains the music
+`res/bgm`: contains music files
 <br>
 `res/fnt`: contains font graphics
 <br>
-`res/gfx`: contains other graphics
+`res/gfx`: contains general graphics
 <br>
 `res/snd`: contains sound effects
 

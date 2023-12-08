@@ -1,3 +1,7 @@
+#include <math.h>
+#include <raylib.h>
+#include <stdio.h>
+#include <string.h>
 #include "berzerk.h"
 
 //------------------------------------------------------------------------------------
