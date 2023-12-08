@@ -1,28 +1,27 @@
-## Trabalho Prático AEDS I - Berzerk
-<hr>
+# Trabalho Prático AEDS I - Berzerk
 
-Recriação do Jogo 'Berzerk' de Atari 2600, feito de acordo com a especificação dada.
+A reimagining of Atari 2600's 'Berzerk'. Made as a college work for the Algorithms class of the Computer Science course at Universidade Federal de São João del-Rei.
 
-### Conteúdo:
-`docs/`: contém os arquivos de documentação
+## Directory Contents:
+`src/`: contains `*.c` and `*.h` files
 <br>
-`src/`: contém os arquivos fonte *.c e de cabeçalho *.h
+`res/bgm`: contains the music
 <br>
-`res/bgm`: contém as músicas
+`res/fnt`: contains font graphics
 <br>
-`res/fnt`: contém a fonte
+`res/gfx`: contains other graphics
 <br>
-`res/gfx`: contém os gráficos
-<br>
-`res/snd`: contém os sons
+`res/snd`: contains sound effects
 
-### Como compilar:
-Simplesmente rode `make` no terminal. O executável será gerado como `dist/berzerk`. Por padrão, o comando `make` compila e executa o jogo. Caso queira apenas compilar, use `make dist/berzerk`. (*Em todos os casos, é necessário ter a biblioteca Raylib instalada*.)
+## How to Compile:
+> NOTE: You must to have 'raylib' installed in your system in order to compile the game.
 
-### Autores:
+On Linux, simply run `make` on a terminal. The binary will be generated as `dist/berzerk`. By default, `make` will compile and run the game, if you want to compile only, use `make dist/berzerk`.
+
+## Authors:
 João Felipe Silva Pereira
 <br>
 Vinícius Gonçalves Ribeiro de Assis
 
-### Docente:
+## Professor:
 Elverton Carvalho Fazzion

@@ -53,7 +53,6 @@ typedef struct Map{
     int num_barriers;
     Rectangle door;
     Rectangle prev_door;
-    Color color;
     Enemy enemies[10];
     int num_enemies;
     int door_locked;
@@ -109,7 +108,7 @@ enum GeneralSounds{
 };
 
 //------------------------------------------------------------------------------------
-// Protótipos das funções do módulo
+// Module function prototypes
 //------------------------------------------------------------------------------------
 
 void InitGame(Game *g);         // Inicializa a variáveis do jogo
@@ -120,7 +119,7 @@ void UpdateBossBattle(Game *g); // Atualiza a batalha final (um frame)
 void DrawBossBattle(Game *g);   // Desenha a batalha final (um frame)
 
 //------------------------------------------------------------------------------------
-// Protótipos das funções auxiliares
+// Auxiliary function prototypes
 //------------------------------------------------------------------------------------
 
 void draw_st_text(Font font, char *str, float y_pos, Color color);

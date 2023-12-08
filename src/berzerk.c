@@ -1,10 +1,10 @@
 #include "berzerk.h"
 
 //------------------------------------------------------------------------------------
-// Definições das funções do módulo
+// Definition of module functions
 //------------------------------------------------------------------------------------
 
-// Inicialização a variáveis do jogo
+// Initialization of game variables
 void InitGame(Game *g){
     g->curr_map = 0;
     g->num_maps = 10;
@@ -26,11 +26,11 @@ void InitGame(Game *g){
     g->gameover = 0;
     g->boss_trigger = 0;
 
-    // Texturas globais
+    // Global textures
     g->grnd_texture = LoadTexture("res/gfx/ground.png");
     g->wall_texture = LoadTexture("res/gfx/wall.png");
 
-    //Sons globais
+    // Global Sounds
     g->general_sfx[SnPlayerAttack]  = LoadSound("res/snd/attack1.mp3");
     g->general_sfx[SnEnemyAttack]   = LoadSound("res/snd/gun.mp3");
     g->general_sfx[SnEnemyDeath]    = LoadSound("res/snd/enmydeath.mp3");
@@ -38,7 +38,7 @@ void InitGame(Game *g){
     g->general_sfx[SnBossCry2]      = LoadSound("res/snd/sonofman2.mp3");
     g->general_sfx[SnBossAttack]    = LoadSound("res/snd/bossattack.mp3");
 
-    // Definição das informações globais dos inimigos
+    // Definition of global enemy data
     g->en_globals.bullets_gfx = LoadTexture("res/gfx/bullet2.png");
     g->en_globals.enemy_gfx[Zombie]   = LoadTexture("res/gfx/zombie.png");
     g->en_globals.enemy_gfx[Soldier]  = LoadTexture("res/gfx/soldier.png");
@@ -80,7 +80,7 @@ void InitGame(Game *g){
     boss_scene_setup(g);
 }
 
-// Limpa os recursos carragados em InitGame()
+// Clear resources loaded in InitGame()
 void UnloadResources(Game *g){
     UnloadTexture(g->hero.texture);
     UnloadTexture(g->hero.bullet_texture);
@@ -91,18 +91,18 @@ void UnloadResources(Game *g){
     for(int i=0;i<7;i++) UnloadTexture(g->en_globals.enemy_gfx[i]);
 }
 
-// Atualiza o jogo (um frame)
+// Updates the game (single frame)
 void UpdateGame(Game *g){
     Map *m = &g->maps[g->curr_map];
     Hero *h = &g->hero;
     
     update_hero_pos(g);
-    if(IsKeyReleased(KEY_SPACE)) shoot_bullet(g);
+    if(IsKeyPressed(KEY_SPACE)) shoot_bullet(g);
 
     for(int i=0; i < m->num_enemies; i++){
         if(!m->enemies[i].hp) continue;
         
-        // Atualiza a posição das balas dos inimigos
+        // Updates the position of enemy bullets
         for(int j=0;j<g->en_globals.enemy_defs[m->enemies[i].type][EnMaxBullets];j++){
             update_bullet_pos(
                 g,
@@ -150,7 +150,7 @@ void UpdateGame(Game *g){
    if(g->curr_map == 8) g->boss_trigger = 1;
 }
 
-// Desenha a tela (um frame)
+// Draws the screen (single frame)
 void DrawGame(Game *g){
     Hero *h = &g->hero;
 
@@ -201,7 +201,7 @@ void UpdateBossBattle(Game *g){
             update_boss(g, &m->enemies[i]);
         }
         
-        // Atualiza a posição das balas dos inimigos
+        // Updates the position of enemy bullets
         for(int j=0;j<g->en_globals.enemy_defs[m->enemies[i].type][EnMaxBullets];j++){
             update_bullet_pos(
                 g,
@@ -246,7 +246,7 @@ void UpdateBossBattle(Game *g){
     update_boss(g, &m->enemies[0]);
 }
 
-// Desenha a batalha final (um frame)
+// Draws final battle (single frame)
 void DrawBossBattle(Game *g){
     Hero *h = &g->hero;
     Map *m = &g->maps[8];
@@ -319,12 +319,11 @@ void enemy_setup(Game *g, Enemy *e, int max_type, Map m){
     e->has_key = 0;
 }
 
-// Setup dos mapas
+// Map setup
 void map0_setup(Game *g){
     Map *m = &g->maps[0];
     m->num_barriers = 1;
     m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 16, 32, 0.65*SCREEN_SIZE_Y};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->door_locked = 1;
     m->num_enemies = 2;
@@ -342,7 +341,6 @@ void map1_setup(Game *g){
     m->num_barriers = 2;
     m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 16, 32, 0.6*SCREEN_SIZE_Y};
     m->barriers[1] = (Rectangle){(float)2*SCREEN_SIZE_X/5, (float)SCREEN_SIZE_Y/2, 32, SCREEN_SIZE_Y};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 3;
@@ -365,7 +363,6 @@ void map2_setup(Game *g){
     m->barriers[3] = (Rectangle){600, 272, 200, 32};
     m->barriers[4] = (Rectangle){(float)SCREEN_SIZE_X/2-168, 16, 336, 32};
     m->barriers[5] = (Rectangle){(float)SCREEN_SIZE_X/2-168, SCREEN_SIZE_Y-48, 336, 32};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
@@ -385,7 +382,6 @@ void map3_setup(Game *g){
     m->barriers[0] = (Rectangle){(float)SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
     m->barriers[1] = (Rectangle){(float)2*SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
     m->barriers[2] = (Rectangle){(float)3*SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
@@ -409,7 +405,6 @@ void map4_setup(Game *g){
     m->barriers[4] = (Rectangle){592, 128, 32, 224};
     m->barriers[5] = (Rectangle){176, 16, 32, 64};
     m->barriers[6] = (Rectangle){592, 400, 32, 64};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
@@ -435,7 +430,6 @@ void map5_setup(Game *g){
     m->barriers[6] = (Rectangle){384, 80, 32, 112};
     m->barriers[7] = (Rectangle){384, 288, 32, 112};
     m->barriers[8] = (Rectangle){384, 224, 32, 32};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
@@ -457,7 +451,6 @@ void map6_setup(Game *g){
     m->barriers[2] = (Rectangle){512, 160, 272, 32};
     m->barriers[3] = (Rectangle){480, 96, 32, 96};
     m->barriers[4] = (Rectangle){384, 224, 32, 32};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 5;
@@ -477,7 +470,6 @@ void map7_setup(Game *g){
     m->barriers[0] = (Rectangle){160, 112, 480, 32};
     m->barriers[1] = (Rectangle){160, 336, 480, 32};
     m->barriers[2] = (Rectangle){384, 192, 32, 96};
-    m->color = GRAY;
     m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 6;

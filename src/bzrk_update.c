@@ -1,7 +1,7 @@
 #include "berzerk.h"
 
 //------------------------------------------------------------------------------------
-// Definições das funções da lógica do jogo
+// Definition of game logic functions
 //------------------------------------------------------------------------------------
 
 void update_hero_pos(Game *g){
@@ -11,7 +11,7 @@ void update_hero_pos(Game *g){
 
     update_bullet_pos(g, &h->bullets[0], &h->bullets_left, 3-g->difficulty);
     update_bullet_pos(g, &h->bullets[1], &h->bullets_left, 3-g->difficulty);
-
+    
     if(IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)){
         if(h->pos.x > SCREEN_BORDER)
             h->pos.x -= h->speed;
@@ -54,7 +54,7 @@ void update_enemy(Game *g, Enemy *e){
     int sr_y = abs((int)(g->hero.pos.y-e->pos.y));
     static int frame_counter = 0;
 
-    //Atualiza as informações das balas
+    //Update bullet information
     if(!(rand()%50) && !e->walking) shoot_enemy_bullet(g, e);
 
     if(sr_y < EN_SHOOTING_RANGE && e->bullets_left){
@@ -71,7 +71,7 @@ void update_enemy(Game *g, Enemy *e){
         else
             e->direction = KEY_DOWN;
     
-    // Movimento
+    // Movement
     } else if(!(rand()%150))
         e->walking = !e->walking;
 
@@ -120,7 +120,7 @@ void update_enemy(Game *g, Enemy *e){
                 e->direction = KEY_RIGHT + (rand()%4);
             }
         }
-        if(!(rand()%50)) // 2% de chance do inimigo mudar de direção
+        if(!(rand()%50)) // 2% chance of enemy changing direction
             e->direction = KEY_RIGHT + (rand()%4);
         if(frame_counter >= 15){
             frame_counter = 0;
@@ -221,7 +221,7 @@ void shoot_boss_bullet(Game *g, Enemy *e){
     }
 }
 
-// Atualiza uma bala
+// Updates one bullet
 void update_bullet_pos(Game *g, Bullet *b, int *bullets_left, int max_bullets){
     Map *m = &g->maps[g->curr_map];
 

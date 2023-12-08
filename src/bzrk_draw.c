@@ -1,10 +1,10 @@
 #include "berzerk.h"
 
 //------------------------------------------------------------------------------------
-// Definições das funções de renderização
+// Definition of rendering functions
 //------------------------------------------------------------------------------------
 
-// Mostra texto estilizado
+// Displays stylized text
 void draw_st_text(Font font, char *str, float y_pos, Color color){
     DrawTextEx(
         font,
@@ -60,7 +60,7 @@ void draw_hero(Hero h){
     );
 }
 
-// Mostra as balas de um inimigo
+// Displays enemy bullets
 void draw_enemy_bullets(Game *g, Enemy e){
     for(int i=0;i<g->en_globals.enemy_defs[e.type][EnMaxBullets];i++){
         if(e.bullets[i].active){
