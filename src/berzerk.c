@@ -1,3 +1,4 @@
+#include <raylib.h>
 #include <stdlib.h>
 #include <string.h>
 #include "berzerk.h"
@@ -7,7 +8,7 @@
 //------------------------------------------------------------------------------------
 
 // Initialization of game variables
-void InitGame(Game *g){
+void initGame(Game *g){
     g->curr_map = 0;
     g->num_maps = 10;
     strcpy(g->hero.name, "\0");
@@ -19,7 +20,7 @@ void InitGame(Game *g){
     g->hero.direction = KEY_DOWN;
     g->hero.bullets_left = 2;
     g->hero.bullets[0] = (Bullet){
-        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6},
+        (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6},
         0,
         8,
         (Vector2){0, 0},
@@ -41,7 +42,7 @@ void InitGame(Game *g){
     g->general_sfx[SnBossAttack]    = LoadSound("res/snd/bossattack.mp3");
 
     // Definition of global enemy data
-    g->en_globals.bullets_gfx = LoadTexture("res/gfx/bullet2.png");
+    g->en_globals.bullets_gfx         = LoadTexture("res/gfx/bullet2.png");
     g->en_globals.enemy_gfx[Zombie]   = LoadTexture("res/gfx/zombie.png");
     g->en_globals.enemy_gfx[Soldier]  = LoadTexture("res/gfx/soldier.png");
     g->en_globals.enemy_gfx[Knight]   = LoadTexture("res/gfx/knight.png");
@@ -71,19 +72,19 @@ void InitGame(Game *g){
     g->en_globals.enemy_defs[Crystal][EnMaxBullets]   = 10;
     g->en_globals.enemy_defs[Crystal][EnHP]           = 10;
 
-    map0_setup(g);
-    map1_setup(g);
-    map2_setup(g);
-    map3_setup(g);
-    map4_setup(g);
-    map5_setup(g);
-    map6_setup(g);
-    map7_setup(g);
-    boss_scene_setup(g);
+    map0Setup(g);
+    map1Setup(g);
+    map2Setup(g);
+    map3Setup(g);
+    map4Setup(g);
+    map5Setup(g);
+    map6Setup(g);
+    map7Setup(g);
+    bossSceneSetup(g);
 }
 
-// Clear resources loaded in InitGame()
-void UnloadResources(Game *g){
+// Clear resources loaded in initGame()
+void unloadResources(Game *g){
     UnloadTexture(g->hero.texture);
     UnloadTexture(g->hero.bullet_texture);
     UnloadTexture(g->en_globals.bullets_gfx);
@@ -94,19 +95,19 @@ void UnloadResources(Game *g){
 }
 
 // Updates the game (single frame)
-void UpdateGame(Game *g){
+void updateGame(Game *g){
     Map *m = &g->maps[g->curr_map];
     Hero *h = &g->hero;
     
-    update_hero_pos(g);
-    if(IsKeyPressed(KEY_SPACE)) shoot_bullet(g);
+    updateHeroPos(g);
+    if(IsKeyPressed(KEY_SPACE)) shootHeroBullet(g);
 
     for(int i=0; i < m->num_enemies; i++){
         if(!m->enemies[i].hp) continue;
         
         // Updates the position of enemy bullets
         for(int j=0;j<g->en_globals.enemy_defs[m->enemies[i].type][EnMaxBullets];j++){
-            update_bullet_pos(
+            updateBulletPos(
                 g,
                 &m->enemies[i].bullets[j],
                 &m->enemies[i].bullets_left,
@@ -116,18 +117,18 @@ void UpdateGame(Game *g){
                 g->gameover = 1;
         }
 
-        update_enemy(g, &m->enemies[i]);
+        updateEnemy(g, &m->enemies[i]);
         if(CheckCollisionRecs(h->bullets[0].pos, m->enemies[i].pos)){
             m->enemies[i].hp--;
             h->bullets[0].active = 0;
             h->bullets_left = 3 - g->difficulty;
-            h->bullets[0].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6};
+            h->bullets[0].pos = (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6};
         }
         if(CheckCollisionRecs(h->bullets[1].pos, m->enemies[i].pos)){
             m->enemies[i].hp--;
             h->bullets[1].active = 0;
             h->bullets_left = 3 - g->difficulty;
-            h->bullets[1].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6};
+            h->bullets[1].pos = (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6};
         }
         if(m->enemies[i].hp <= 0){
             PlaySound(g->general_sfx[SnEnemyDeath]);
@@ -141,19 +142,19 @@ void UpdateGame(Game *g){
 
     if(CheckCollisionRecs(h->pos, m->door) && !m->door_locked){
         g->curr_map = m->next_map;
-        h->pos = (Rectangle){32, (float)SCREEN_SIZE_Y/2-24, STD_SIZE_X, STD_SIZE_Y};
+        h->pos = (Rectangle){32, (float)SCREEN_HEIGHT/2-24, STD_SIZE_X, STD_SIZE_Y};
     }
 
     if(CheckCollisionRecs(h->pos, m->prev_door)){
         g->curr_map = m->prev_map;
-        h->pos = (Rectangle){SCREEN_SIZE_X-64, (float)SCREEN_SIZE_Y/2-24, STD_SIZE_X, STD_SIZE_Y};
+        h->pos = (Rectangle){SCREEN_WIDTH-64, (float)SCREEN_HEIGHT/2-24, STD_SIZE_X, STD_SIZE_Y};
    }
 
    if(g->curr_map == 8) g->boss_trigger = 1;
 }
 
 // Draws the screen (single frame)
-void DrawGame(Game *g){
+void drawGame(Game *g){
     Hero *h = &g->hero;
 
     BeginDrawing();
@@ -161,11 +162,11 @@ void DrawGame(Game *g){
     ClearBackground(RAYWHITE);
     DrawTextureRec(
         g->grnd_texture,
-        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
+        (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT},
         (Vector2){0, 0},
         WHITE
     );
-    draw_borders(g);
+    drawBorders(g);
     DrawTexture(
         h->bullet_texture,
         h->bullets[0].pos.x-2,
@@ -178,19 +179,19 @@ void DrawGame(Game *g){
         h->bullets[1].pos.y-2,
         WHITE
     );
-    draw_map(g);
-    draw_hero(*h);
+    drawMap(g);
+    drawHero(*h);
 
     EndDrawing();
 }
 
-void UpdateBossBattle(Game *g){
+void updateBossBattle(Game *g){
     Hero *h = &g->hero;
     Map *m = &g->maps[g->curr_map];
     int num_crystals = 0;
 
-    update_hero_pos(g);
-    if(IsKeyReleased(KEY_SPACE)) shoot_bullet(g);
+    updateHeroPos(g);
+    if(IsKeyReleased(KEY_SPACE)) shootHeroBullet(g);
     
     for(int i=0; i < m->num_enemies; i++){
         if(!m->enemies[i].hp){
@@ -200,12 +201,12 @@ void UpdateBossBattle(Game *g){
 
         if(i){
             num_crystals++;
-            update_boss(g, &m->enemies[i]);
+            updateBoss(g, &m->enemies[i]);
         }
         
         // Updates the position of enemy bullets
         for(int j=0;j<g->en_globals.enemy_defs[m->enemies[i].type][EnMaxBullets];j++){
-            update_bullet_pos(
+            updateBulletPos(
                 g,
                 &m->enemies[i].bullets[j],
                 &m->enemies[i].bullets_left,
@@ -221,13 +222,13 @@ void UpdateBossBattle(Game *g){
             m->enemies[i].hp--;
             h->bullets[0].active = 0;
             h->bullets_left = 3 - g->difficulty;
-            h->bullets[0].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6};
+            h->bullets[0].pos = (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6};
         }
         if(CheckCollisionRecs(h->bullets[1].pos, m->enemies[i].pos)){
             m->enemies[i].hp--;
             h->bullets[1].active = 0;
             h->bullets_left = 3 - g->difficulty;
-            h->bullets[1].pos = (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6};
+            h->bullets[1].pos = (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6};
         }
 
         if(m->enemies[i].hp <= 0){
@@ -245,11 +246,11 @@ void UpdateBossBattle(Game *g){
         m->enemies[0].hp = g->en_globals.enemy_defs[SonOfMan][EnHP];
         return;
     }
-    update_boss(g, &m->enemies[0]);
+    updateBoss(g, &m->enemies[0]);
 }
 
 // Draws final battle (single frame)
-void DrawBossBattle(Game *g){
+void drawBossBattle(Game *g){
     Hero *h = &g->hero;
     Map *m = &g->maps[8];
 
@@ -258,7 +259,7 @@ void DrawBossBattle(Game *g){
     ClearBackground(RAYWHITE);
     DrawTextureRec(
         g->grnd_texture,
-        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
+        (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT},
         (Vector2){0, 0},
         WHITE
     );
@@ -274,19 +275,19 @@ void DrawBossBattle(Game *g){
         h->bullets[1].pos.y-2,
         WHITE
     );
-    draw_hero(*h);
-    draw_borders(g);
-    draw_boss(g);
-    draw_enemy_bullets(g, m->enemies[0]);
+    drawHero(*h);
+    drawBorders(g);
+    drawBoss(g);
+    drawEnemyBullets(g, m->enemies[0]);
     for(int i=0;i<5;i++){
         if(!(m->enemies[i].hp) || m->enemies[i].type == SonOfMan) continue;
-        draw_crystal(g, m->enemies[i]);
-        draw_enemy_bullets(g, m->enemies[i]);
+        drawCrystal(g, m->enemies[i]);
+        drawEnemyBullets(g, m->enemies[i]);
     }
     EndDrawing();
 }
 
-int barrier_collision(Map *m, Rectangle *t){
+int barrierCollision(Map *m, Rectangle *t){
     for(int i = 0; i < m->num_barriers; i++){
         if(CheckCollisionRecs(*t, m->barriers[i])){
             return 1;
@@ -295,20 +296,20 @@ int barrier_collision(Map *m, Rectangle *t){
     return 0;
 }
 
-void enemy_setup(Game *g, Enemy *e, int max_type, Map m){
+void enemySetup(Game *g, Enemy *e, int max_type, Map m){
     e->walking = 0;
     e->type = rand()%max_type;
     do{
         e->pos = (Rectangle){
             (float)184+rand()%536,
-            (float)SCREEN_BORDER+rand()%(SCREEN_SIZE_Y-64),
+            (float)SCREEN_BORDER+rand()%(SCREEN_HEIGHT-64),
             (float)g->en_globals.enemy_gfx[e->type].width/16,
             ((float)g->en_globals.enemy_gfx[e->type].height/2)
         };
-    } while(CheckCollisionRecs(g->hero.pos, e->pos) || barrier_collision(&m, &e->pos));
+    } while(CheckCollisionRecs(g->hero.pos, e->pos) || barrierCollision(&m, &e->pos));
     for(int i=0;i<g->en_globals.enemy_defs[e->type][EnMaxBullets];i++){
         e->bullets[i] = (Bullet){
-        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6},
+        (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6},
         0,
         8,
         {0, 0},
@@ -322,82 +323,82 @@ void enemy_setup(Game *g, Enemy *e, int max_type, Map m){
 }
 
 // Map setup
-void map0_setup(Game *g){
+void map0Setup(Game *g){
     Map *m = &g->maps[0];
     m->num_barriers = 1;
-    m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 16, 32, 0.65*SCREEN_SIZE_Y};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->barriers[0] = (Rectangle){(float)3*SCREEN_WIDTH/5, 16, 32, 0.65*SCREEN_HEIGHT};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->door_locked = 1;
     m->num_enemies = 2;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 1, *m);
+        enemySetup(g, &m->enemies[i], 1, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 0;
     m->next_map = 1;
 }
 
-void map1_setup(Game *g){
+void map1Setup(Game *g){
     Map *m = &g->maps[1];
     m->num_barriers = 2;
-    m->barriers[0] = (Rectangle){(float)3*SCREEN_SIZE_X/5, 16, 32, 0.6*SCREEN_SIZE_Y};
-    m->barriers[1] = (Rectangle){(float)2*SCREEN_SIZE_X/5, (float)SCREEN_SIZE_Y/2, 32, SCREEN_SIZE_Y};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
-    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->barriers[0] = (Rectangle){(float)3*SCREEN_WIDTH/5, 16, 32, 0.6*SCREEN_HEIGHT};
+    m->barriers[1] = (Rectangle){(float)2*SCREEN_WIDTH/5, (float)SCREEN_HEIGHT/2, 32, SCREEN_HEIGHT};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 3;
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 2, *m);
+        enemySetup(g, &m->enemies[i], 2, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 0;
     m->next_map = 2;
 }
 
-void map2_setup(Game *g){
+void map2Setup(Game *g){
     Map *m = &g->maps[2];
     m->num_barriers = 6;
     m->barriers[0] = (Rectangle){16, 176, 200, 32};
     m->barriers[1] = (Rectangle){16, 272, 200, 32};
     m->barriers[2] = (Rectangle){600, 176, 200, 32};
     m->barriers[3] = (Rectangle){600, 272, 200, 32};
-    m->barriers[4] = (Rectangle){(float)SCREEN_SIZE_X/2-168, 16, 336, 32};
-    m->barriers[5] = (Rectangle){(float)SCREEN_SIZE_X/2-168, SCREEN_SIZE_Y-48, 336, 32};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
-    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->barriers[4] = (Rectangle){(float)SCREEN_WIDTH/2-168, 16, 336, 32};
+    m->barriers[5] = (Rectangle){(float)SCREEN_WIDTH/2-168, SCREEN_HEIGHT-48, 336, 32};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 3, *m);
+        enemySetup(g, &m->enemies[i], 3, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 1;
     m->next_map = 3;
 }
 
-void map3_setup(Game *g){
+void map3Setup(Game *g){
     Map *m = &g->maps[3];
     m->num_barriers = 3;
-    m->barriers[0] = (Rectangle){(float)SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
-    m->barriers[1] = (Rectangle){(float)2*SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
-    m->barriers[2] = (Rectangle){(float)3*SCREEN_SIZE_X/4-16, 16, 32, 0.6 * SCREEN_SIZE_Y};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
-    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->barriers[0] = (Rectangle){(float)SCREEN_WIDTH/4-16, 16, 32, 0.6 * SCREEN_HEIGHT};
+    m->barriers[1] = (Rectangle){(float)2*SCREEN_WIDTH/4-16, 16, 32, 0.6 * SCREEN_HEIGHT};
+    m->barriers[2] = (Rectangle){(float)3*SCREEN_WIDTH/4-16, 16, 32, 0.6 * SCREEN_HEIGHT};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 3, *m);
+        enemySetup(g, &m->enemies[i], 3, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 2;
     m->next_map = 4;
 }
 
-void map4_setup(Game *g){
+void map4Setup(Game *g){
     Map *m = &g->maps[4];
     m->num_barriers = 7;
     m->barriers[0] = (Rectangle){208, 128, 384, 32};
@@ -407,45 +408,45 @@ void map4_setup(Game *g){
     m->barriers[4] = (Rectangle){592, 128, 32, 224};
     m->barriers[5] = (Rectangle){176, 16, 32, 64};
     m->barriers[6] = (Rectangle){592, 400, 32, 64};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
-    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 4, *m);
+        enemySetup(g, &m->enemies[i], 4, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 3;
     m->next_map = 5;
 }
 
-void map5_setup(Game *g){
+void map5Setup(Game *g){
     Map *m = &g->maps[5];
     m->num_barriers = 9;
     m->barriers[0] = (Rectangle){16, 176, 32, 32};
     m->barriers[1] = (Rectangle){16, 272, 32, 32};
-    m->barriers[2] = (Rectangle){SCREEN_SIZE_X-48, 176, 32, 32};
-    m->barriers[3] = (Rectangle){SCREEN_SIZE_X-48, 272, 32, 32};
+    m->barriers[2] = (Rectangle){SCREEN_WIDTH-48, 176, 32, 32};
+    m->barriers[3] = (Rectangle){SCREEN_WIDTH-48, 272, 32, 32};
     m->barriers[4] = (Rectangle){240, 224, 112, 32};
     m->barriers[5] = (Rectangle){448, 224, 112, 32};
     m->barriers[6] = (Rectangle){384, 80, 32, 112};
     m->barriers[7] = (Rectangle){384, 288, 32, 112};
     m->barriers[8] = (Rectangle){384, 224, 32, 32};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
-    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 4;
     m->door_locked = 1;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 5, *m);
+        enemySetup(g, &m->enemies[i], 5, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 4;
     m->next_map = 6;
 }
 
-void map6_setup(Game *g){
+void map6Setup(Game *g){
     Map *m = &g->maps[6];
     m->num_barriers = 5;
     m->barriers[0] = (Rectangle){16, 288, 272, 32};
@@ -453,46 +454,46 @@ void map6_setup(Game *g){
     m->barriers[2] = (Rectangle){512, 160, 272, 32};
     m->barriers[3] = (Rectangle){480, 96, 32, 96};
     m->barriers[4] = (Rectangle){384, 224, 32, 32};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
-    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 5;
     m->door_locked = 7;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 5, *m);
+        enemySetup(g, &m->enemies[i], 5, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 5;
     m->next_map = 7;
 }
 
-void map7_setup(Game *g){
+void map7Setup(Game *g){
     Map *m = &g->maps[7];
     m->num_barriers = 3;
     m->barriers[0] = (Rectangle){160, 112, 480, 32};
     m->barriers[1] = (Rectangle){160, 336, 480, 32};
     m->barriers[2] = (Rectangle){384, 192, 32, 96};
-    m->door = (Rectangle){SCREEN_SIZE_X-(SCREEN_BORDER+5), (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
-    m->prev_door = (Rectangle){5, (float)SCREEN_SIZE_Y/2-24, SCREEN_BORDER, 48};
+    m->door = (Rectangle){SCREEN_WIDTH-(SCREEN_BORDER+5), (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
+    m->prev_door = (Rectangle){5, (float)SCREEN_HEIGHT/2-24, SCREEN_BORDER, 48};
     m->num_enemies = 6;
     m->door_locked = 7;
 
     for(int i=0; i< m->num_enemies; i++){
-        enemy_setup(g, &m->enemies[i], 5, *m);
+        enemySetup(g, &m->enemies[i], 5, *m);
     }
     m->enemies[0].has_key = 1;
     m->prev_map = 6;
     m->next_map = 8;
 }
 
-void boss_scene_setup(Game *g){
+void bossSceneSetup(Game *g){
     Map *m = &g->maps[8];
     m->num_barriers = 0;
     m->num_enemies = 5;
     for(int i=0;i<5;i++){
         for(int j=0;j<10;j++){
             m->enemies[i].bullets[j] = (Bullet){
-                (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6},
+                (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6},
                 0,
                 8,
                 (Vector2){0, 0},
@@ -508,9 +509,9 @@ void boss_scene_setup(Game *g){
         m->enemies[i].hp = g->en_globals.enemy_defs[Crystal][EnHP];
         m->enemies[i].bullets_left = g->en_globals.enemy_defs[Crystal][EnMaxBullets];
     }
-    m->enemies[0].pos = (Rectangle){(float)SCREEN_SIZE_X/2-256, -16, 512, 232};
+    m->enemies[0].pos = (Rectangle){(float)SCREEN_WIDTH/2-256, -16, 512, 232};
     m->enemies[1].pos = (Rectangle){60, 80, 80, 80};
-    m->enemies[2].pos = (Rectangle){SCREEN_SIZE_X-140, 80, 80, 80};
+    m->enemies[2].pos = (Rectangle){SCREEN_WIDTH-140, 80, 80, 80};
     m->enemies[3].pos = (Rectangle){160, 384, 80, 80};
-    m->enemies[4].pos = (Rectangle){SCREEN_SIZE_X-240, 384, 80, 80};
+    m->enemies[4].pos = (Rectangle){SCREEN_WIDTH-240, 384, 80, 80};
 }

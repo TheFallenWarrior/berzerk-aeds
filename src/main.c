@@ -11,9 +11,10 @@
 int main(){
     Game game;
 
-    InitWindow(SCREEN_SIZE_X, SCREEN_SIZE_Y, "Berzerk");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Berzerk");
     InitAudioDevice();
     SetTargetFPS(60);
+    SetExitKey(KEY_F3);
     Sound ting = LoadSound("res/snd/ting1.mp3");
     game.font = LoadFont("res/fnt/alpha_beta.png");
 
@@ -28,12 +29,12 @@ int main(){
             BeginDrawing();
             ClearBackground((Color){28, 16, 28, 255});
             DrawTexture(logo, (GetScreenWidth() - logo.width)/2, 20, WHITE);
-            draw_st_text(game.font, "Press Enter to continue", (float)GetScreenHeight()/2 + 75, GRAY);
+            drawCentrText(game.font, "Press Enter to continue", (float)SCREEN_HEIGHT/2 + 75, GRAY);
             EndDrawing();
             if(WindowShouldClose()) exit(0); // Detects window exit request
         }
         PlaySound(ting);
-        InitGame(&game); // Initializes the game
+        initGame(&game); // Initializes the game
         UnloadTexture(logo);
 
         int letter_count = 0;
@@ -60,10 +61,10 @@ int main(){
             BeginDrawing();
             ClearBackground((Color){28, 16, 28, 255});
             DrawTexture(box, (GetScreenWidth() - box.width)/2, 150, WHITE);
-            draw_st_text(game.font, "Type your name", (float)GetScreenHeight()/2 - 50, WHITE);
-            draw_st_text(game.font, game.hero.name, (float)GetScreenHeight()/2, WHITE);
+            drawCentrText(game.font, "Type your name", (float)SCREEN_HEIGHT/2 - 50, WHITE);
+            drawCentrText(game.font, game.hero.name, (float)SCREEN_HEIGHT/2, WHITE);
             if(letter_count >= 3)
-                draw_st_text(game.font, "Press Enter to continue", (float)GetScreenHeight()/2 + 50, LIGHTGRAY);
+                drawCentrText(game.font, "Press Enter to continue", (float)SCREEN_HEIGHT/2 + 50, LIGHTGRAY);
             EndDrawing();
             if(WindowShouldClose()) exit(0);
         }
@@ -74,9 +75,9 @@ int main(){
             BeginDrawing();
             ClearBackground((Color){28, 16, 28, 255});
             DrawTexture(box, (GetScreenWidth() - box.width)/2, 150, WHITE);
-            draw_st_text(game.font, "Select your level", (float)GetScreenHeight()/2 - 50, WHITE);
-            draw_st_text(game.font, "1: Easy", (float)GetScreenHeight()/2 + 25, LIGHTGRAY);
-            draw_st_text(game.font, "2: Hard", (float)GetScreenHeight()/2 + 50, LIGHTGRAY);
+            drawCentrText(game.font, "Select your level", (float)SCREEN_HEIGHT/2 - 50, WHITE);
+            drawCentrText(game.font, "1: Easy", (float)SCREEN_HEIGHT/2 + 25, LIGHTGRAY);
+            drawCentrText(game.font, "2: Hard", (float)SCREEN_HEIGHT/2 + 50, LIGHTGRAY);
             EndDrawing();
             if(WindowShouldClose()) exit(0); 
         }
@@ -93,8 +94,8 @@ int main(){
 
         while(!game.gameover && !game.boss_trigger){ // Game's main loop
             UpdateMusicStream(music);
-            UpdateGame(&game);
-            DrawGame(&game);
+            updateGame(&game);
+            drawGame(&game);
             if(WindowShouldClose()) exit(0);
         }
 
@@ -105,8 +106,8 @@ int main(){
 
         while(!game.gameover){ // Final boss battle loop
             UpdateMusicStream(music);
-            UpdateBossBattle(&game);
-            DrawBossBattle(&game);
+            updateBossBattle(&game);
+            drawBossBattle(&game);
             if(WindowShouldClose()) exit(0);
         }
 
@@ -150,15 +151,15 @@ int main(){
         box = LoadTexture("res/gfx/box.png");
         while(!IsKeyPressed(KEY_R)){ // Draws the game over screen
             UpdateMusicStream(music);
-            draw_st_text(game.font, ((game.boss_trigger)?"The End":"Game Over"), 100, WHITE);
-            draw_highscores(box, game.font, names, highscores);
-            draw_st_text(game.font, "Press 'R' to restart", 424, GRAY);
+            drawCentrText(game.font, ((game.boss_trigger)?"The End":"Game Over"), 100, WHITE);
+            drawHighscores(box, game.font, names, highscores);
+            drawCentrText(game.font, "Press 'R' to restart", 424, GRAY);
             if(WindowShouldClose()) exit(0);
         }
         PlaySound(ting);
 
         // Unload the resources that will be loaded on the next loop
-        UnloadResources(&game);
+        unloadResources(&game);
         UnloadTexture(box);
         UnloadMusicStream(music);
     }

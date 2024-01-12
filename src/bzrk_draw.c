@@ -8,8 +8,8 @@
 // Definition of rendering functions
 //------------------------------------------------------------------------------------
 
-// Displays stylized text
-void draw_st_text(Font font, char *str, float y_pos, Color color){
+// Displays stylized text at the center of the screen
+void drawCentrText(Font font, char *str, float y_pos, Color color){
     DrawTextEx(
         font,
         str,
@@ -23,20 +23,20 @@ void draw_st_text(Font font, char *str, float y_pos, Color color){
     );
 }
 
-void draw_highscores(Texture2D bg, Font font, char names[3][7], int *scores){
+void drawHighscores(Texture2D bg, Font font, char names[3][7], int *scores){
     BeginDrawing();
     ClearBackground((Color){28, 16, 28, 255});
     DrawTexture(bg, (GetScreenWidth() - bg.width)/2, 184, WHITE);
-    draw_st_text(font, "Highscores", 200, WHITE);
+    drawCentrText(font, "Highscores", 200, WHITE);
     for(int i=0;i<3;i++){
         char str[24];
         sprintf(str, "(%d) %s", scores[i], names[i]);
-        draw_st_text(font, str, 255 + 40*i, LIGHTGRAY);
+        drawCentrText(font, str, 255 + 40*i, LIGHTGRAY);
     }
     EndDrawing();
 }
 
-void draw_hero(Hero h){
+void drawHero(Hero h){
     int hero_sprite_offset = 0;
 
     switch (h.direction){
@@ -65,7 +65,7 @@ void draw_hero(Hero h){
 }
 
 // Displays enemy bullets
-void draw_enemy_bullets(Game *g, Enemy e){
+void drawEnemyBullets(Game *g, Enemy e){
     for(int i=0;i<g->en_globals.enemy_defs[e.type][EnMaxBullets];i++){
         if(e.bullets[i].active){
             DrawTexture(
@@ -78,7 +78,7 @@ void draw_enemy_bullets(Game *g, Enemy e){
     }
 }
 
-void draw_enemy(Enemy e, Texture2D texture){
+void drawEnemy(Enemy e, Texture2D texture){
     int sprite_offset = 0;
     if(!e.walking) e.current_frame = 0;
     switch(e.direction){
@@ -110,7 +110,7 @@ void draw_enemy(Enemy e, Texture2D texture){
     );
 }
 
-void draw_boss(Game *g){
+void drawBoss(Game *g){
     Map *m = &g->maps[8];
     static int frame_counter = 0;
 
@@ -126,18 +126,18 @@ void draw_boss(Game *g){
     DrawTextureRec(
         g->en_globals.enemy_gfx[SonOfMan],
         (Rectangle){512, 0, 128, 80},
-        (Vector2){(float)SCREEN_SIZE_X/2 - 192, 176 + 12*sin(PI*(float)frame_counter/120)},
+        (Vector2){(float)SCREEN_WIDTH/2 - 192, 176 + 12*sin(PI*(float)frame_counter/120)},
         WHITE
     );
     DrawTextureRec(
         g->en_globals.enemy_gfx[SonOfMan],
         (Rectangle){512, 80, 128, 80},
-        (Vector2){(float)SCREEN_SIZE_X/2 + 64, 176 + 12*sin(PI*(float)frame_counter/120)},
+        (Vector2){(float)SCREEN_WIDTH/2 + 64, 176 + 12*sin(PI*(float)frame_counter/120)},
         WHITE
     );
 }
 
-void draw_crystal(Game *g, Enemy e){
+void drawCrystal(Game *g, Enemy e){
     DrawTextureRec(
         g->en_globals.enemy_gfx[Crystal],
         (Rectangle){e.current_frame*80, 0, 80, 160},
@@ -146,34 +146,34 @@ void draw_crystal(Game *g, Enemy e){
     );
 }
 
-void draw_borders(Game *g){
+void drawBorders(Game *g){
     DrawTextureRec(
         g->wall_texture,
-        (Rectangle){0, 0, SCREEN_BORDER, SCREEN_SIZE_Y},
+        (Rectangle){0, 0, SCREEN_BORDER, SCREEN_HEIGHT},
         (Vector2){0, 0},
         WHITE
     );
     DrawTextureRec(
         g->wall_texture,
-        (Rectangle){0, 16, SCREEN_SIZE_X, SCREEN_BORDER},
+        (Rectangle){0, 16, SCREEN_WIDTH, SCREEN_BORDER},
         (Vector2){0, 0},
         WHITE
     );
     DrawTextureRec(
         g->wall_texture,
-        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
-        (Vector2){SCREEN_SIZE_X-SCREEN_BORDER, 0},
+        (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT},
+        (Vector2){SCREEN_WIDTH-SCREEN_BORDER, 0},
         WHITE
     );
     DrawTextureRec(
         g->wall_texture,
-        (Rectangle){0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y},
-        (Vector2){0, SCREEN_SIZE_Y-SCREEN_BORDER},
+        (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT},
+        (Vector2){0, SCREEN_HEIGHT-SCREEN_BORDER},
         WHITE
     );
 }
 
-void draw_map(Game *g){
+void drawMap(Game *g){
     Map *m = &g->maps[g->curr_map];
     for(int i = 0; i < m->num_barriers; i++){
         DrawTextureRec(
@@ -195,7 +195,7 @@ void draw_map(Game *g){
 
     for(int i=0;i<m->num_enemies;i++){
         if(!m->enemies[i].hp) continue;
-        draw_enemy(m->enemies[i], g->en_globals.enemy_gfx[m->enemies[i].type]);
-        draw_enemy_bullets(g, m->enemies[i]);
+        drawEnemy(m->enemies[i], g->en_globals.enemy_gfx[m->enemies[i].type]);
+        drawEnemyBullets(g, m->enemies[i]);
     }
 }

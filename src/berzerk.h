@@ -7,10 +7,10 @@
 #define STD_SIZE_X              32
 #define STD_SIZE_Y              32
 #define SCREEN_BORDER           16
-#define SCREEN_SIZE_X           800
-#define SCREEN_SIZE_Y           480
+#define SCREEN_WIDTH            800
+#define SCREEN_HEIGHT           480
 #define CHARACTER_NAME_SIZE     6
-#define EN_SHOOTING_RANGE       20
+#define EN_DETECT_SPAN       20
 
 typedef struct Bullet{
     Rectangle pos;
@@ -104,47 +104,44 @@ enum GeneralSounds{
 };
 
 //------------------------------------------------------------------------------------
-// Module function prototypes
+// Function prototypes
 //------------------------------------------------------------------------------------
 
-void InitGame(Game *g);         // Inicializa a variáveis do jogo
-void UnloadResources(Game *g);  // Limpa os recursos carragados em InitGame()
-void UpdateGame(Game *g);       // Atualiza o jogo (um frame)
-void DrawGame(Game *g);         // Desenha a tela (um frame)
-void UpdateBossBattle(Game *g); // Atualiza a batalha final (um frame)
-void DrawBossBattle(Game *g);   // Desenha a batalha final (um frame)
+void initGame(Game *g);         // Initializes game variables
+void unloadResources(Game *g);  // Clears resources loaded in initGame()
+void updateGame(Game *g);       // Updates game state (single frame)
+void drawGame(Game *g);         // Draw game screen (single frame)
+void updateBossBattle(Game *g); // Update boss battle state (single frame)
+void drawBossBattle(Game *g);   // Draws boss battle screen (single frame)
 
-//------------------------------------------------------------------------------------
-// Auxiliary function prototypes
-//------------------------------------------------------------------------------------
+void drawCentrText(Font font, char *str, float y_pos, Color color);
+void drawHighscores(Texture2D bg, Font font, char names[3][7], int *scores);
+void drawHero(Hero h);
+void drawEnemyBullets(Game *g, Enemy e);
+void drawEnemy(Enemy e, Texture2D texture);
+void drawBoss(Game *g);
+void drawCrystal(Game *g, Enemy e);
+void drawBorders(Game *g);
+void drawMap(Game *g);
 
-void draw_st_text(Font font, char *str, float y_pos, Color color);
-void draw_highscores(Texture2D bg, Font font, char names[3][7], int *scores);
-void draw_hero(Hero h);
-void draw_enemy_bullets(Game *g, Enemy e);
-void draw_enemy(Enemy e, Texture2D texture);
-void draw_boss(Game *g);
-void draw_crystal(Game *g, Enemy e);
-void draw_borders(Game *g);
-void draw_map(Game *g);
-void update_hero_pos(Game *g);
-void update_enemy(Game *g, Enemy *e);
-void update_boss(Game *g, Enemy *e);
-void shoot_bullet(Game *g);
-void shoot_enemy_bullet(Game *g, Enemy *e);
-void shoot_boss_bullet(Game *g, Enemy *e);
-void update_bullet_pos(Game *g, Bullet *b, int *bullets_left,int max_bullets);
+void updateHeroPos(Game *g);
+void updateEnemy(Game *g, Enemy *e);
+void updateBoss(Game *g, Enemy *e);
+void shootHeroBullet(Game *g);
+void shootEnemyBullet(Game *g, Enemy *e);
+void shootBossBullet(Game *g, Enemy *e);
+void updateBulletPos(Game *g, Bullet *b, int *bullets_left,int max_bullets);
 
-int barrier_collision(Map *m, Rectangle *t);
-void enemy_setup(Game *g, Enemy *e, int max_type, Map m);
-void map0_setup(Game *g);
-void map1_setup(Game *g);
-void map2_setup(Game *g);
-void map3_setup(Game *g);
-void map4_setup(Game *g);
-void map5_setup(Game *g);
-void map6_setup(Game *g);
-void map7_setup(Game *g);
-void boss_scene_setup(Game *g);
+int barrierCollision(Map *m, Rectangle *t);
+void enemySetup(Game *g, Enemy *e, int max_type, Map m);
+void map0Setup(Game *g);
+void map1Setup(Game *g);
+void map2Setup(Game *g);
+void map3Setup(Game *g);
+void map4Setup(Game *g);
+void map5Setup(Game *g);
+void map6Setup(Game *g);
+void map7Setup(Game *g);
+void bossSceneSetup(Game *g);
 
 #endif

@@ -1,42 +1,44 @@
+#include <math.h>
+#include <stdlib.h>
 #include "berzerk.h"
 
 //------------------------------------------------------------------------------------
 // Definition of game logic functions
 //------------------------------------------------------------------------------------
 
-void update_hero_pos(Game *g){
+void updateHeroPos(Game *g){
     Hero *h = &g->hero;
     Map *m = &g->maps[g->curr_map];
     static int frame_counter = 0;
 
-    update_bullet_pos(g, &h->bullets[0], &h->bullets_left, 3-g->difficulty);
-    update_bullet_pos(g, &h->bullets[1], &h->bullets_left, 3-g->difficulty);
+    updateBulletPos(g, &h->bullets[0], &h->bullets_left, 3-g->difficulty);
+    updateBulletPos(g, &h->bullets[1], &h->bullets_left, 3-g->difficulty);
     
     if(IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)){
         if(h->pos.x > SCREEN_BORDER)
             h->pos.x -= h->speed;
-        if(barrier_collision(m, &h->pos)) h->pos.x += h->speed;
+        if(barrierCollision(m, &h->pos)) h->pos.x += h->speed;
         h->direction = KEY_LEFT;
         frame_counter++;
         
     } else if(IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)){
-        if(h->pos.x + h->pos.width < SCREEN_SIZE_X - SCREEN_BORDER)
+        if(h->pos.x + h->pos.width < SCREEN_WIDTH - SCREEN_BORDER)
             h->pos.x += h->speed;
-        if(barrier_collision(m, &h->pos)) h->pos.x -= h->speed;
+        if(barrierCollision(m, &h->pos)) h->pos.x -= h->speed;
         h->direction = KEY_RIGHT;
         frame_counter++;
 
     } else if(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)){
         if(h->pos.y > SCREEN_BORDER)
             h->pos.y -= h->speed;
-        if(barrier_collision(m, &h->pos)) h->pos.y += h->speed;
+        if(barrierCollision(m, &h->pos)) h->pos.y += h->speed;
         h->direction = KEY_UP;
         frame_counter++;
 
     } else if(IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)){
-        if(h->pos.y + h->pos.height < SCREEN_SIZE_Y - SCREEN_BORDER)
+        if(h->pos.y + h->pos.height < SCREEN_HEIGHT - SCREEN_BORDER)
             h->pos.y += h->speed;
-        if(barrier_collision(m, &h->pos)) h->pos.y -= h->speed;
+        if(barrierCollision(m, &h->pos)) h->pos.y -= h->speed;
         h->direction = KEY_DOWN;
         frame_counter++;
     }
@@ -48,23 +50,23 @@ void update_hero_pos(Game *g){
     if(h->current_frame >= 4) h->current_frame = 0;
 }
 
-void update_enemy(Game *g, Enemy *e){
+void updateEnemy(Game *g, Enemy *e){
     Map *m = &g->maps[g->curr_map];
     int sr_x = abs((int)(g->hero.pos.x-e->pos.x));
     int sr_y = abs((int)(g->hero.pos.y-e->pos.y));
     static int frame_counter = 0;
 
     //Update bullet information
-    if(!(rand()%50) && !e->walking) shoot_enemy_bullet(g, e);
+    if(!(rand()%50) && !e->walking) shootEnemyBullet(g, e);
 
-    if(sr_y < EN_SHOOTING_RANGE && e->bullets_left){
+    if(sr_y < EN_DETECT_SPAN && e->bullets_left){
         e->walking = 0;
         if(g->hero.pos.x < e->pos.x)
             e->direction = KEY_LEFT;
         else
             e->direction = KEY_RIGHT;
         
-    } else if(sr_x < EN_SHOOTING_RANGE && e->bullets_left){
+    } else if(sr_x < EN_DETECT_SPAN && e->bullets_left){
         e->walking = 0;
         if(g->hero.pos.y < e->pos.y)
             e->direction = KEY_UP;
@@ -83,18 +85,18 @@ void update_enemy(Game *g, Enemy *e){
             else{
                 e->direction = KEY_RIGHT + (rand()%4);
             }
-            if(barrier_collision(m, &e->pos)){
+            if(barrierCollision(m, &e->pos)){
                 e->pos.x += e->speed;
                 e->direction = KEY_RIGHT + (rand()%4);
             }
 
         } else if(e->direction == KEY_RIGHT){
-            if(e->pos.x + e->pos.width < SCREEN_SIZE_X - SCREEN_BORDER)
+            if(e->pos.x + e->pos.width < SCREEN_WIDTH - SCREEN_BORDER)
                 e->pos.x += e->speed;
             else
                 e->direction = KEY_RIGHT + (rand()%4);
             
-            if(barrier_collision(m, &e->pos)){
+            if(barrierCollision(m, &e->pos)){
                 e->pos.x -= e->speed;
                 e->direction = KEY_RIGHT + (rand()%4);
             }
@@ -105,17 +107,17 @@ void update_enemy(Game *g, Enemy *e){
             else
                 e->direction = KEY_RIGHT + (rand()%4);
             
-            if(barrier_collision(m, &e->pos)){
+            if(barrierCollision(m, &e->pos)){
                 e->pos.y += e->speed;
                 e->direction = KEY_RIGHT + (rand()%4);
             }
         } else if(e->direction == KEY_DOWN){
-            if(e->pos.y + e->pos.height < SCREEN_SIZE_Y - SCREEN_BORDER)
+            if(e->pos.y + e->pos.height < SCREEN_HEIGHT - SCREEN_BORDER)
                 e->pos.y += e->speed;
             else
                 e->direction = KEY_RIGHT + (rand()%4);
             
-            if(barrier_collision(m, &e->pos)){
+            if(barrierCollision(m, &e->pos)){
                 e->pos.y -= e->speed;
                 e->direction = KEY_RIGHT + (rand()%4);
             }
@@ -131,17 +133,17 @@ void update_enemy(Game *g, Enemy *e){
 
 }
 
-void update_boss(Game *g, Enemy *e){
+void updateBoss(Game *g, Enemy *e){
     static int frame_counter = 0;
     frame_counter++;
-    if(!(rand()%((e->type==SonOfMan)?15:75))) shoot_boss_bullet(g, e);
+    if(!(rand()%((e->type==SonOfMan)?15:75))) shootBossBullet(g, e);
     if(frame_counter >= 15){
             frame_counter = 0;
             e->current_frame++;
     }
 }
 
-void shoot_bullet(Game *g){
+void shootHeroBullet(Game *g){
     Hero *h = &g->hero;
     Bullet *hb = &h->bullets[2 - h->bullets_left];
 
@@ -173,7 +175,7 @@ void shoot_bullet(Game *g){
     }
 }
 
-void shoot_enemy_bullet(Game *g, Enemy *e){
+void shootEnemyBullet(Game *g, Enemy *e){
     Bullet *eb = &e->bullets[g->en_globals.enemy_defs[e->type][EnMaxBullets] - e->bullets_left];
     if(e->bullets_left>0){
         PlaySound(g->general_sfx[SnEnemyAttack]);
@@ -201,7 +203,7 @@ void shoot_enemy_bullet(Game *g, Enemy *e){
     }
 }
 
-void shoot_boss_bullet(Game *g, Enemy *e){
+void shootBossBullet(Game *g, Enemy *e){
     Bullet *eb = &e->bullets[g->en_globals.enemy_defs[e->type][EnMaxBullets] - e->bullets_left];
     float x;
     if(e->bullets_left>0){
@@ -210,7 +212,7 @@ void shoot_boss_bullet(Game *g, Enemy *e){
         e->bullets_left--;
         if(e->type == SonOfMan){
             x = PI * -((float)rand()/(float)(RAND_MAX));
-            eb->pos.x = (float)SCREEN_SIZE_X/2;
+            eb->pos.x = (float)SCREEN_WIDTH/2;
             eb->pos.y = e->pos.y + (float)2*g->en_globals.enemy_gfx[e->type].height/3;
         } else{
             x = 2* PI * ((float)rand()/(float)(RAND_MAX));
@@ -222,11 +224,11 @@ void shoot_boss_bullet(Game *g, Enemy *e){
 }
 
 // Updates one bullet
-void update_bullet_pos(Game *g, Bullet *b, int *bullets_left, int max_bullets){
+void updateBulletPos(Game *g, Bullet *b, int *bullets_left, int max_bullets){
     Map *m = &g->maps[g->curr_map];
 
     Bullet blank_bullet = (Bullet){
-        (Rectangle){SCREEN_SIZE_X, SCREEN_SIZE_Y, 6, 6},
+        (Rectangle){SCREEN_WIDTH, SCREEN_HEIGHT, 6, 6},
         0,
         8,
         {0, 0}
@@ -236,13 +238,13 @@ void update_bullet_pos(Game *g, Bullet *b, int *bullets_left, int max_bullets){
         b->pos.x += b->speed*b->direction2.x;
         b->pos.y += b->speed*b->direction2.y;
         if(
-            (b->pos.x < SCREEN_BORDER) || (b->pos.x > SCREEN_SIZE_X - SCREEN_BORDER) ||
-            (b->pos.y < SCREEN_BORDER) || (b->pos.y > SCREEN_SIZE_Y - SCREEN_BORDER)
+            (b->pos.x < SCREEN_BORDER) || (b->pos.x > SCREEN_WIDTH - SCREEN_BORDER) ||
+            (b->pos.y < SCREEN_BORDER) || (b->pos.y > SCREEN_HEIGHT - SCREEN_BORDER)
         ){
             *b = blank_bullet;
             *bullets_left = max_bullets;
         }
-        if(barrier_collision(m, &b->pos)){
+        if(barrierCollision(m, &b->pos)){
             *b = blank_bullet;
             *bullets_left = max_bullets;
         }
